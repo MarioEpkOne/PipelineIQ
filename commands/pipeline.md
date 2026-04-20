@@ -363,7 +363,7 @@ If the fix loop ran and errors remain after 2 cycles:
 - Say: "N errors remain after 2 fix cycles. Review the final audit at `Retros/<filename>` and fix manually or run `/fix <filename>` again."
 
 ### Suggest next steps
-- "Run manual tests for items marked 'requires play mode' in the audit"
+- "Run manual tests for items marked 'requires runtime verification' in the audit"
 - "Review proposed skill changes in the audit — reply 'apply [title]' or 'apply all'"
 - "Run `/learnings-review` to review and apply accumulated pipeline improvement suggestions"
 - Any other context-specific suggestions

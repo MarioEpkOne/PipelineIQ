@@ -14,7 +14,7 @@ Do not take actions that affect external systems (no git, no PRs, no API calls).
 
 Read the user's request carefully. Identify what parts of the codebase are relevant.
 
-Explore the codebase. Understand the current state of the relevant code: architecture, data flow, conventions, constraints, existing patterns. Use whatever tools and approaches get you there. This is a Unity project — use Unity MCP tools (find_gameobjects, manage_scene, manage_components, read_console, etc.) to inspect live scene state, hierarchy, and component data directly. Do not ask the user to describe Unity scene state manually.
+Explore the codebase. Understand the current state of the relevant code: architecture, data flow, conventions, constraints, existing patterns. Use whatever tools and approaches get you there.
 
 Verify your understanding. Don't assume. Read the actual code. If something is ambiguous, verify it independently.
 

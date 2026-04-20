@@ -36,10 +36,8 @@ If the audit references a worktree in its header, resolve and use that worktree 
 For each actionable error (skip entries under "Not actionable"):
 
 1. Read the relevant file(s) fresh (they may have changed since the audit)
-2. Apply the suggested fix using Edit/Write for code files, MCP tools for prefab/scene files
-3. After each fix: verify no errors were introduced
-   - For code files: check compilation (read_console, editor_state polling, etc.) or run the project's lint/test command as appropriate
-   - For prefab/scene files: use MCP inspection tools to confirm the value was set
+2. Apply the suggested fix using Edit/Write
+3. After each fix: verify no errors were introduced by running the project's build/lint/test command as appropriate
 4. If a fix introduces new errors:
    - Revert the change
    - Try a different approach (max 2 attempts per error)

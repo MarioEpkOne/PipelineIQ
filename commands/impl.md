@@ -30,9 +30,9 @@ Read every file listed in the plan's **Reading list** section, in order.
 
 Do not read any other files unless a specific step explicitly requires it and explains why.
 
-**Optional — learnings.md**: If `learnings.md` exists in the project root and the task involves an area with known gotchas (prefabs, RectTransform, layout), skim it for relevant entries. Treat them as risks to watch for, not hard rules.
+**Optional — learnings.md**: If `learnings.md` exists in the project root and the task involves an area with known gotchas, skim it for relevant entries. Treat them as risks to watch for, not hard rules.
 
-**Staleness check**: As you read each file, compare against any "Current value" fields in the plan's steps. If a plan step says "Current value: `barRef` is null" but you read the file and `barRef` is already set, or a method the plan references has been renamed/removed — stop and warn the user before proceeding. The plan may be outdated.
+**Staleness check**: As you read each file, compare against any "Current value" fields in the plan's steps. If a plan step says "Current value: X" but you read the file and X is already changed, or a method the plan references has been renamed/removed — stop and warn the user before proceeding. The plan may be outdated.
 
 **Worktree baseline mismatch check**: If the worktree's files differ structurally from what the plan expects (e.g., the worktree was branched from an earlier state of master and is missing fields, rows, or features that were added to master after the branch was created), do not silently proceed. Enumerate every missing element you find and confirm with the user whether to (a) port the missing elements before executing the plan, or (b) treat the omissions as intentional. Implementing a new feature on top of a diverged baseline that silently drops pre-existing functionality is a regression even if the new feature works.
 
@@ -41,14 +41,11 @@ Do not read any other files unless a specific step explicitly requires it and ex
 Execute each step in order. Do not skip steps.
 
 After each step:
-- Run `read_console logType='error'`
-- If compile errors exist: diagnose and fix before proceeding to the next step. Do not accumulate errors across steps.
-- For prefab and scene steps: use MCP tools only. Never use Edit or Write on `.prefab` or `.unity` files.
-- Before any MCP scene or prefab step that follows a script edit: poll `mcpforunity://editor_state` until `isCompiling == false`, then run `read_console logType='error'` to confirm clean compile before proceeding.
+- Run the project's build / typecheck / lint / test command as appropriate (see the plan's "Verification Approach" section).
+- If errors exist: diagnose and fix before proceeding to the next step. Do not accumulate errors across steps.
 
 **Per-step retry behavior:**
-- After each step, verify no errors were introduced using whatever build/lint/test command is appropriate for the project (see the plan's "Verification Approach" section for guidance).
-- If a step fails (compilation error, test failure, MCP error, unexpected state):
+- If a step fails (compilation error, test failure, unexpected state):
   1. Record the error message, which step failed, and what was tried
   2. If this is attempt 1 or 2 of 3: retry the step with a **fresh approach**. Do NOT repeat the exact same action. Think about *why* it failed and try differently. Include the error context from the previous attempt in your reasoning.
   3. If this is attempt 3 of 3: mark the step as **FAILED** in the working log under "Errors Encountered". Record the error, all 3 attempts, and why each failed. Then **continue to the next step** — do not stop the entire implementation.
@@ -70,11 +67,9 @@ After each step:
 3. Document the deviation in the working log's "Deviations from Plan" section with: (a) what the plan said, (b) what was actually true, (c) what you changed, (d) why the change preserves the plan's intent.
 4. Do NOT silently skip the step. Do NOT fall back to "just make it work" without recording what was swapped out.
 
-**Layout step verification**: For any step that modifies `sizeDelta`, `anchoredPosition`, or anchors on a Canvas element, `read_console logType='error'` is not sufficient verification. Run the editor-mode layout measurement script described in CLAUDE.md → *Layout Cannot Be Verified with MCP Inspection Alone* and confirm the logged corners are on-screen. Only mark the step verified when the measurement confirms it.
+**Conditional steps that depend on visual or runtime observation**: If a step in the plan says "only do X if you observe Y at runtime," you must not skip it based on static reasoning. Either: (a) execute an automated check to confirm the condition programmatically, or (b) mark the step explicitly in the working log as "deferred to user — requires visual/runtime verification" AND include the exact remediation instruction (what to run if the condition is true).
 
-**Conditional steps that depend on visual play-mode observation**: If a step in the plan says "only do X if you see Y in play mode," you must not skip it based on static reasoning. Either: (a) execute the editor measurement script to check the condition programmatically, or (b) mark the step explicitly in the working log as "deferred to user — requires visual verification" AND include the exact remediation instruction (what menu item or script to run if the condition is true).
-
-**Hand-offs to the user must include remediation**: When a checklist item cannot be verified automatically (e.g. requires navigating game flow), record in the working log: (1) exactly what to look for, and (2) what step to run if the check fails. A bare "handed off to user" with no next-step instruction is not acceptable.
+**Hand-offs to the user must include remediation**: When a checklist item cannot be verified automatically (e.g. requires navigating UI flow), record in the working log: (1) exactly what to look for, and (2) what step to run if the check fails. A bare "handed off to user" with no next-step instruction is not acceptable.
 
 If the plan says line ~42 and the actual line is 45: adjust and document the deviation. Do not fail over line number drift.
 
@@ -103,9 +98,8 @@ Before writing the file, run `date '+%Y-%m-%d--%H-%M'` to get the actual current
 **Impl plan**: Implementation Plans/impl--...md
 
 ## Changes Made
-- `Assets/Scripts/Foo.cs`: Added `DoThing(int, string)` method to FooClass
-- `Assets/Scripts/Bar.cs`: Modified `HandleEvent()` — added call to DoThing
-- `Assets/Resources/SomePrefab.prefab`: Set FooClass.barRef via MCP
+- `src/foo.ts`: Added `doThing(number, string)` method to FooClass
+- `src/bar.ts`: Modified `handleEvent()` — added call to doThing
 
 ## Errors Encountered
 - <any error that occurred + how it was resolved, or "None">
@@ -116,8 +110,9 @@ Before writing the file, run `date '+%Y-%m-%d--%H-%M'` to get the actual current
 - <any steps that differed from the plan + why, or "None">
 
 ## Verification
-- Compile: OK
-- Play mode: <describe what was observed>
+- Build / typecheck: OK
+- Tests: <pass/fail count>
+- Runtime behavior: <describe what was observed>
 ```
 
 Write the working log even if the user declines to commit.
@@ -145,20 +140,20 @@ If no: tell the user the working log has been written and they can commit manual
 
 ### Phase 8 — Merge into Main Project
 
-After committing (or if the user declined but changes are committed), merge the worktree branch into the main project so Unity reflects the final result.
+After committing (or if the user declined but changes are committed), merge the worktree branch into the main project.
 
 1. Get the worktree's current branch name:
    ```bash
-   git -C "C:\Users\Epkone\Humble beginnings\.claude\worktrees\<slug>" branch --show-current
+   git -C "<worktree-path>" branch --show-current
    ```
 
 2. Merge into the main project:
    ```bash
-   git -C "C:\Users\Epkone\Humble beginnings" merge <worktree-branch>
+   git -C "<main-project-path>" merge <worktree-branch>
    ```
 
-3. If the merge succeeds: tell the user **"Unity will now reload with all changes from this session."**
+3. If the merge succeeds: report success to the user.
 
-4. If the merge has conflicts: report exactly which files conflict and tell the user to resolve them manually in `C:\Users\Epkone\Humble beginnings` before opening Unity.
+4. If the merge has conflicts: report exactly which files conflict and tell the user to resolve them manually in the main project directory.
 
-5. If the user declined to commit in Phase 7 and there are no committed changes in the worktree: skip the merge and tell the user they can run `/commit` first, then merge manually with `git -C "C:\Users\Epkone\Humble beginnings" merge <worktree-branch>`.
+5. If the user declined to commit in Phase 7 and there are no committed changes in the worktree: skip the merge and tell the user they can run `/commit` first, then merge manually with `git -C "<main-project-path>" merge <worktree-branch>`.

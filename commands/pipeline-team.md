@@ -413,7 +413,7 @@ If `Retros/` does not exist, create it. Write `Retros/batch-summary--YYYY-MM-DD-
 [List specs with unresolved audit errors after the fix loop]
 
 ## Next Steps
-- Manual tests required for: [specs with 'requires play mode' audit items]
+- Manual tests required for: [specs with 'requires runtime verification' audit items]
 - Review proposed skill changes in audit docs
 - Specs blocked by failure — resolve and re-run: /pipeline-team [filter]
 ```

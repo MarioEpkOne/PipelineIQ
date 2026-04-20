@@ -22,15 +22,7 @@ Read the full spec document.
 
 From the spec's **Technical Design** section, extract every file that will change.
 
-Read every file in that list fully before writing anything. For Unity scene or prefab changes, also use MCP tools to confirm live state:
-
-```
-find_gameobjects name='...'
-manage_prefabs action='get_hierarchy' prefab_path='...'
-manage_scene action='get_info'
-```
-
-> **Worktree path rule**: When reading `.prefab` or `.unity` files to verify current property values, always read from the **main project path** (`C:\Users\Epkone\Humble beginnings\Assets\...`), never from a worktree-relative path. Worktrees are branch snapshots; MCP and Unity operate on the main project. This step happens before the worktree is created, so use the main project path unconditionally.
+Read every file in that list fully before writing anything.
 
 If the live state diverges from the spec's **Current State** section (e.g., a method was renamed, a file was deleted, a component is missing), flag the divergence explicitly and ask the user how to proceed before continuing.
 
@@ -44,9 +36,7 @@ The plan must be self-contained — the implementing agent reads only the files 
 
 > **"Current value" snippets must come from a fresh Read in this session.** When you include a "Current value" code block in a step (typical for surgical Edit operations), you MUST have called `Read` on the target file in the same session as writing this plan. Do not copy from a previous plan, the spec, an older audit, or memory — source files drift between when a feature is specced and when it is planned, and a stale snippet will cause the implementer to either (a) waste a turn resolving the discrepancy, or (b) silently rewrite the wrong region if `apply_text_edits` (line-number-based) is used instead of `Edit` (string-anchor-based). Tag the snippet `**Current value (verified from <main-project absolute path>):**` so the implementer can trust it.
 
-> **Prefab full-rebuild ordering rule**: If the plan includes both a targeted prefab property fix (e.g. a temp `FixX.cs` script that sets `anchoredPosition`) and a full-rebuild editor script for the same prefab (one that calls `PrefabUtility.SaveAsPrefabAsset` on a newly created `GameObject`), the rebuild will clobber the targeted fix. Either: (a) bake the fix values directly into the rebuild script and omit the separate fix step, or (b) apply the targeted fix **after** the rebuild step (place it later in the plan). Never put a targeted fix step before a full-rebuild step for the same prefab.
-
-> **Verified baseline rule**: For every step that mutates a value from A → B (e.g. `sizeDelta`, `preferredHeight`, a script field), the step must state the **verified current value of A** and the source path it was read from (always the main project path). If you cannot confirm the current value during Phase 2, add an explicit read/verify sub-step before the mutation step in the plan. The implementing agent must be able to spot a mismatch between the plan's stated baseline and reality before touching anything.
+> **Verified baseline rule**: For every step that mutates a value from A → B, the step must state the **verified current value of A** and the source path it was read from. If you cannot confirm the current value during Phase 2, add an explicit read/verify sub-step before the mutation step in the plan. The implementing agent must be able to spot a mismatch between the plan's stated baseline and reality before touching anything.
 
 > **Test infrastructure claims must be verified, not assumed.** When the plan references a test dependency (`pytest-asyncio`, `hypothesis`, a custom fixture, etc.), verify it is actually installed/configured before writing a plan step that relies on it. Check `pyproject.toml`, `pytest.ini`, or run `pip show <pkg>` in the target venv. Do NOT infer availability from the mere existence of a test file with the relevant import — the import may be dead, commented, or the file may be broken in CI and nobody noticed. Record the check in the plan's Reading List or a dedicated "Environment assumptions verified" section.
 
@@ -59,23 +49,22 @@ The plan must be self-contained — the implementing agent reads only the files 
 - **Spec**: specs/spec--<date>--<description>.md
 - **Worktree**: .claude/worktrees/<slug>/
 - **Scope — files in play** (agent must not touch files not listed here):
-  - Assets/Scripts/Foo.cs
-  - Assets/Scripts/Bar.cs
-  - Assets/Resources/SomePrefab.prefab  ← via MCP only, never Edit/Write
+  - src/foo.ts
+  - src/bar.ts
 - **Reading list** (read these in order before starting, nothing else):
-  1. Assets/Scripts/Foo.cs
-  2. Assets/Scripts/Bar.cs
+  1. src/foo.ts
+  2. src/bar.ts
 
 ## Steps
 
 ### Step N: <Short title>
-**File**: `Assets/Scripts/Foo.cs`
-**Location**: Class `FooClass`, after line ~42 (after `void Start()`)
+**File**: `src/foo.ts`
+**Location**: Class `FooClass`, after line ~42 (after `constructor()`)
 **Action**: Add method
 
 **Signature**:
-\`\`\`csharp
-private void DoThing(int param1, string param2)
+\`\`\`ts
+private doThing(param1: number, param2: string): void
 \`\`\`
 
 **What it does**: <1-2 sentence description of behavior>
@@ -83,32 +72,23 @@ private void DoThing(int param1, string param2)
 **Before/after** (only for changes to existing methods or complex logic):
 \`\`\`
 // BEFORE
-void OldMethod() { ... }
+oldMethod() { ... }
 
 // AFTER
-void OldMethod() { newBehavior(); ... }
+oldMethod() { newBehavior(); ... }
 \`\`\`
 
 > **Docstring rule**: If this step changes an existing function's observable behavior, add an explicit sub-action: "Update docstring/comments to reflect new behavior." Do not rely on the auditor to catch stale docs.
 
 > **Return type rule**: If this step changes the return type of a public function, add an explicit sub-action: "Update all existing tests that call this function to match the new return type." Do not leave test breakage to be discovered later.
 
-**Verification**: Compile OK, no console errors, <specific observable behavior>
-
----
-
-### Step N+1: Wire component in prefab
-**Tool**: `manage_prefabs action='modify_contents'`
-**Target**: `Resources/PlayerPrefab.prefab`
-**Action**: Set property `componentType='FooClass'` `propertyName='barRef'` `value='Bar'`
-**Current value** (verified from `C:\Users\Epkone\Humble beginnings\Assets\Resources\PlayerPrefab.prefab`): `barRef` is null
-**Verification**: Prefab hierarchy shows FooClass.barRef is not null in play mode
+**Verification**: Build/typecheck OK, no errors, <specific observable behavior>
 
 ---
 
 ## Post-Implementation Checklist
-- [ ] All files compile (read_console logType='error' returns empty)
-- [ ] Play mode entry: no errors
+- [ ] Build passes / typecheck clean
+- [ ] Test suite passes
 - [ ] <specific observable behavior 1>
 - [ ] <specific observable behavior 2>
 
@@ -116,8 +96,8 @@ void OldMethod() { newBehavior(); ... }
 Describe how the implementing agent should verify each step succeeds. Examples:
 - "Run `dotnet build` after each C# file change"
 - "Run `npm run lint` after each TypeScript change"
-- "Check Unity console for errors after each script edit"
 - "Run `cargo check` after each Rust file change"
+- "Run `pytest tests/<module>` after each Python change"
 
 If no specific command is known, state: "Agent should determine the appropriate verification method based on the project type."
 
@@ -162,11 +142,10 @@ Now that the implementation plan is saved and verified, move the spec to `specs/
 
 ```bash
 # Create the applied directory if it doesn't exist
-mkdir -p "C:\Users\Epkone\Humble beginnings\specs\applied"
+mkdir -p specs/applied
 
 # Move the spec (replace <spec-filename> with the actual filename)
-mv "C:\Users\Epkone\Humble beginnings\specs\<spec-filename>" \
-   "C:\Users\Epkone\Humble beginnings\specs\applied\<spec-filename>"
+mv specs/<spec-filename> specs/applied/<spec-filename>
 ```
 
 After moving, update the **Spec** line in the implementation plan's Header to reflect the new path:
@@ -194,8 +173,8 @@ If `EnterWorktree` fails (name collision, git error), report the error and ask t
 After the worktree is created, copy the plan into it so `/impl` can find it whether run from the main project or from inside the worktree:
 
 ```bash
-cp "C:\Users\Epkone\Humble beginnings\Implementation Plans\impl--<filename>.md" \
-   "C:\Users\Epkone\Humble beginnings\.claude\worktrees\<slug>\Implementation Plans\"
+cp "Implementation Plans/impl--<filename>.md" \
+   ".claude/worktrees/<slug>/Implementation Plans/"
 ```
 
 ### Phase 5 — Confirm
@@ -204,5 +183,3 @@ Tell the user:
 - Impl plan written to `Implementation Plans/impl--...md` (main project and worktree copy)
 - Worktree created at `.claude/worktrees/<slug>/`
 - **"Run `/impl <description>` to begin implementation."**
-
-Remind the user: Unity MCP tools connect to the running Unity Editor regardless of working directory. Script file edits are written to the worktree and are not visible to the Unity Editor until the worktree is merged to main.
