@@ -57,28 +57,11 @@ Print: "Found N spec(s): [list filenames]"
 
 **Check 6 -- Permission mode warning**
 
-Check the session's current permission mode. If not `bypassPermissions` or `auto`:
-
-```
-WARNING: The lead is not running in auto-approve mode.
-  Permission prompts from teammates will surface here and may pause
-  parallel pipelines waiting for your approval.
-  To prevent interruptions, restart with --dangerously-skip-permissions
-  or set permissionMode: bypassPermissions in settings.json.
-  Continuing anyway...
-```
-
-Do NOT stop. Continue.
+If not in `bypassPermissions` or `auto` mode: warn that permission prompts may pause parallel pipelines; suggest `--dangerously-skip-permissions` or `permissionMode: bypassPermissions`. Do NOT stop.
 
 **Check 7 -- Display mode note**
 
-Print:
-
-```
-Display mode: in-process (use Shift+Down to cycle through teammates)
-  Split-pane mode requires tmux or iTerm2 -- not available in VS Code,
-  Windows Terminal, or Ghostty. In-process mode works in any terminal.
-```
+Print: "Display mode: in-process (Shift+Down to cycle teammates). Split-pane requires tmux/iTerm2."
 
 ---
 
@@ -197,42 +180,14 @@ The lead processes merge requests sequentially, one at a time.
 
 **Merge processing (one at a time):**
 
-```bash
-# Step 1: Rebase worktree onto current master
-git -C "<worktree_path>" rebase master
-```
-
-Rebase outcomes:
-- **Success** -> continue to step 2.
-- **Conflicts in non-critical files only** (docs, changelogs, `learnings.md`, `PATCHNOTES.md`): auto-resolve by taking the worktree version (`git checkout --ours <file>` then `git add <file>`), then `git rebase --continue`. Continue to step 2.
-- **Any source code or type definition conflict**: PAUSE. Tell user: "Merge conflict in source files for [spec]: [file list]. Resolve conflicts in [worktree_path] and reply 'continue' or 'skip [spec]'."
-
-```bash
-# Step 2: Fast-forward merge into master
-git merge --ff-only <branch>
-```
-
-If `--ff-only` fails: tell user about the non-fast-forward situation. Do not auto-force. Wait for instructions.
-
-```bash
-# Step 3: Clean up worktree
-git worktree remove "<worktree_path>"
-git branch -d <branch>
-git worktree prune
-```
-
-**Step 4:** Broadcast `MASTER_ADVANCED` to all active teammates.
-
-**Step 5:** Lead marks the task `completed` in the task list immediately after the successful `git merge --ff-only`. Never wait for the teammate to do this.
-
-**Task-lag fallback:** if dependent tasks do not appear unblocked within 3 minutes of the task being marked complete:
-1. Check the task list state directly.
-2. If the task still shows as `in_progress` or `pending`: message the now-idle teammate "Please confirm task `pipeline: <spec>` is marked complete."
-3. If still stuck after 3 more minutes: mark it complete manually and log: "Task lag detected for `<spec>` -- marked complete manually."
-
-**Step 6:** For each newly unblocked task, spawn a fresh teammate (up to 5 total active). Return to Phase 3.
-
-**Step 7:** Process the next item in the merge queue.
+1. **Rebase**: `git -C "<worktree_path>" rebase master`. On success -> continue. Non-critical file conflicts (docs, changelogs, learnings.md, PATCHNOTES.md): auto-resolve with `--ours`, then `git rebase --continue`. Source code conflicts: PAUSE and ask user to resolve or skip.
+2. **Merge**: `git merge --ff-only <branch>`. If ff-only fails: report to user, do not force.
+3. **Cleanup**: `git worktree remove "<worktree_path>" && git branch -d <branch> && git worktree prune`.
+4. **Broadcast** `MASTER_ADVANCED` to all active teammates.
+5. **Mark task complete** immediately after merge. Never wait for the teammate.
+6. **Task-lag fallback**: if dependents are not unblocked after 3 min, nudge the idle teammate. After 3 more min, mark complete manually and log "task lag detected."
+7. **Spawn** newly unblocked tasks (up to 5 active). Return to Phase 3.
+8. **Next queue item**: process sequentially.
 
 ---
 
@@ -258,34 +213,11 @@ All tasks are terminal when every task is `completed`, `failed`, `blocked-by-fai
 
 --- /pipeline-team: COMPLETE ---
 
-If `Retros/` does not exist, create it. Write `Retros/batch-summary--YYYY-MM-DD--HH-MM.md`:
-
-```markdown
-# Batch Pipeline Summary -- YYYY-MM-DD HH:MM
-
-## Overview
-- Total specs: N
-- Completed: N
-- Failed: N
-- Blocked by upstream failure: N
-- Skipped (user decision): N
-
-## Results
-
-| Spec | Status | Impl Plan | Working Log | Audit | Notes |
-|------|--------|-----------|-------------|-------|-------|
-| spec-A.md | completed | Implementation Plans/... | Working Logs/... | Retros/... | |
-| spec-B.md | failed | Implementation Plans/... | Working Logs/... | -- | Repair failed: [reason] |
-| spec-C.md | blocked | -- | -- | -- | Blocked by failure of spec-B.md |
-
-## Remaining Issues
-[List specs with unresolved audit errors after the fix loop]
-
-## Next Steps
-- Manual tests required for: [specs with 'requires runtime verification' audit items]
-- Review proposed skill changes in audit docs
-- Specs blocked by failure -- resolve and re-run: /pipeline-team [filter]
-```
+If `Retros/` does not exist, create it. Write `Retros/batch-summary--YYYY-MM-DD--HH-MM.md` with:
+- **Overview**: total/completed/failed/blocked/skipped counts
+- **Results table**: `| Spec | Status | Impl Plan | Working Log | Audit | Notes |` -- one row per spec
+- **Remaining Issues**: specs with unresolved audit errors
+- **Next Steps**: manual tests needed, proposed skill changes to review, blocked specs to re-run
 
 ### Post-merge patch-notes (after all merges complete)
 

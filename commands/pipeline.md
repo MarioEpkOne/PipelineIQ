@@ -19,40 +19,13 @@ SKIP_MERGE is used in Phase 6 to control whether the merge workflow runs. When /
 ## Decision Tree Overview
 
 ```
-Phase 1: SPEC (interactive, inline)
-  |
-  v
-Phase 1.5: WORKTREE (inline)
-  |
-  | failure -> STOP + report
-  v
-Phase 2: IMPL-PLAN (subagent)
-  |
-  | failure -> STOP + report
-  v
-Phase 3: IMPL (subagent, with per-step retries)
-  |
-  | success (even partial) -> continue
-  | total failure -> STOP + report
-  v
-Phase 4: AUDIT (subagent)
-  |
-  | 0 actionable errors -> skip to Phase 6
-  | >= 1 actionable errors -> Phase 5
-  | audit failure -> Phase 6 with warning
-  v
-Phase 5: FIX LOOP (max 2 iterations)
-  |
-  | fix -> re-audit -> 0 errors -> Phase 6
-  | fix -> re-audit -> errors + loop < 2 -> loop again
-  | fix -> re-audit -> errors + loop >= 2 -> Phase 6 + report remaining
-  v
-Phase 6: SUMMARY
-  - Artifact paths
-  - Update learnings.md
-  - Remaining errors (if any)
-  - If SKIP_MERGE=false: merge + patch-notes + next steps
-  - If SKIP_MERGE=true: PIPELINE_COMPLETE report + go idle
+Phase 1: SPEC (inline) -> 1.5: WORKTREE (inline)
+  -> Phase 2: IMPL-PLAN (subagent) -> Phase 3: IMPL (subagent)
+  -> Phase 4: AUDIT (subagent)
+     0 errors -> Phase 6 | errors -> Phase 5
+  -> Phase 5: FIX LOOP (max 2: fix -> re-audit -> check)
+  -> Phase 6: SUMMARY + learnings + (SKIP_MERGE ? PIPELINE_COMPLETE : merge)
+Each phase failure -> STOP + report (except Phase 3 partial -> continue)
 ```
 
 ---
@@ -63,13 +36,11 @@ Phase 6: SUMMARY
 
 Run the full spec workflow inline -- do NOT spawn a subagent for this phase, user interaction is required.
 
-> **Existing spec shortcut**: If the argument (after stripping SKIP_MERGE) is a path to an existing file in `specs/` or `specs/applied/` (e.g. it ends in `.md` and the file exists on disk at either location), skip Phase 1a and go directly to Phase 2. Resolve the absolute path and pass it directly to the Phase 2 subagent. Do not create a second spec document. The planner (impl-plan.md Phase 3.6) will move it to `specs/applied/` as normal.
+> **Existing spec shortcut**: If the remaining argument (after stripping SKIP_MERGE) is a path to an existing `.md` file in `specs/` or `specs/applied/`, skip the spec workflow and go directly to Phase 2 with that path.
 
 ### Phase 1a -- Run the Spec Workflow
 
-Read `/home/epkone/.claude/commands/spec.md` in full and follow every phase in it exactly (orient, interview, write spec to `specs/`).
-
-Note the exact filename written to `specs/` -- you will pass it to the Phase 2 subagent.
+Read `/home/epkone/.claude/commands/spec.md` in full and follow every phase in it exactly. Note the exact filename written to `specs/`.
 
 ---
 
@@ -77,37 +48,15 @@ Note the exact filename written to `specs/` -- you will pass it to the Phase 2 s
 
 --- Phase 1.5: WORKTREE ---
 
-**Capture the main repo path before entering the worktree:**
-```bash
-git rev-parse --show-toplevel
-```
-Store this as `MASTER_REPO_PATH`. You will inject it into every subagent prompt and use it in Phase 6 git commands.
+**Capture the main repo path** via `git rev-parse --show-toplevel`. Store as `MASTER_REPO_PATH`.
 
-Derive a slug from the spec filename: lowercase, hyphens only, max 30 chars.
-Example: `spec--2026-04-16--18-00--perception-verification-and-dom-injection.md` -> `perception-verification-dom`
+**Derive a slug** from the spec filename: lowercase, hyphens only, max 30 chars. Check `git worktree list` for collisions; append `-2`/`-3` if needed. STOP after 3 collisions.
 
-**Check for slug collision before calling EnterWorktree:**
-```bash
-git worktree list
-```
-If a worktree with the same branch name already exists: append `-2` to the slug (or `-3` if `-2` also collides). If you cannot derive a unique slug after 3 attempts, STOP and tell the user to clean up stale worktrees first.
+**Create the worktree**: Load the EnterWorktree schema via `ToolSearch query="select:EnterWorktree"`. Call `EnterWorktree name='<slug>'`. If it fails: STOP. Do not fall back to master.
 
-Load the EnterWorktree schema:
-```
-ToolSearch query="select:EnterWorktree"
-```
+**Verify**: Run `git worktree list` and confirm the new entry exists on disk. If not: STOP with "EnterWorktree returned success but the worktree does not exist on disk."
 
-Call: `EnterWorktree name='<slug>'`
-
-**If EnterWorktree fails for any reason: STOP the pipeline. Report the error. Do not fall back to working on master. Tell the user to resolve the issue and rerun.**
-
-**After EnterWorktree succeeds, verify the worktree actually exists on disk:**
-```bash
-git worktree list
-```
-Confirm a new entry appears with the expected branch name AND that its listed path exists. If `git worktree list` does not show the new entry, or the path is missing: STOP the pipeline with: "EnterWorktree returned success but the worktree does not exist on disk -- check your WorktreeCreate hook."
-
-Store the returned worktree path as `WORKTREE_PATH` and the branch name as `WORKTREE_BRANCH`. You will use these in every subsequent phase and in Phase 6 git commands.
+Store the worktree path as `WORKTREE_PATH` and branch as `WORKTREE_BRANCH`.
 
 ---
 
@@ -223,26 +172,7 @@ If the fix loop ran and errors remain after 2 cycles:
 
 ### Update learnings.md
 
-Reflect on the pipeline run across all phases. Write only entries that are actionable improvements to the pipeline process itself -- not code patterns or project-specific observations.
-
-Format each entry as:
-```
-## [Short title]
-**Phase affected**: [spec / impl-plan / impl / audit / fix]
-**What happened**: [one sentence -- the slowdown or friction observed]
-**Suggestion**: [concrete change to the pipeline prompt or process]
-```
-
-Then:
-- If `learnings.md` does not exist at the project root: create it with a `# Pipeline Learnings` header
-- Append any new entries
-- If this run was smooth with nothing notable: skip (do not append empty sections)
-
-**IMPORTANT -- DO NOT apply these learnings:**
-- Do NOT invoke the learnings-review skill
-- Do NOT modify any files under `~/.claude/commands/` or `~/.claude/skills/`
-- Do NOT clear or delete existing entries from `learnings.md`
-- The sole purpose of this step is to record observations for future human review
+Reflect on the pipeline run. Write only actionable improvements to the pipeline process (not code patterns). Use the format already defined in `learnings.md` (create the file with a `# Pipeline Learnings` header if it does not exist). Append new entries; skip if nothing notable. Do NOT invoke learnings-review or modify any command/skill files.
 
 ### SKIP_MERGE branch:
 
