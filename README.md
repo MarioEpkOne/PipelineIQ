@@ -11,7 +11,7 @@ Claude Code slash commands for a closed-loop **spec → plan → implement → a
 Runs the full lifecycle for one feature or change. The spec phase is interactive (you answer questions); every subsequent phase runs as an isolated subagent with clean context.
 
 ```
-/pipeline add dark mode toggle to the settings page
+/pipeline add a retry queue for failed webhook deliveries — store payloads in SQLite, exponential backoff with jitter, max 5 attempts, dead-letter after exhaustion with a summary email to the ops alias
 ```
 
 **Phases:**
@@ -27,7 +27,7 @@ Runs the full lifecycle for one feature or change. The spec phase is interactive
 If you already have a spec written, skip the interview:
 
 ```
-/pipeline specs/dark-mode-toggle.md
+/pipeline specs/webhook-retry-queue.md
 ```
 
 **Artifacts produced:**
