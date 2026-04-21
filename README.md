@@ -11,7 +11,8 @@ Claude Code slash commands for a closed-loop **spec → plan → implement → a
 Runs the full lifecycle for one feature or change. The spec phase is interactive (you answer questions); every subsequent phase runs as an isolated subagent with clean context.
 
 ```
-/pipeline add a retry queue for failed webhook deliveries — store payloads in SQLite, exponential backoff with jitter, max 5 attempts, dead-letter after exhaustion with a summary email to the ops alias
+# example prompt — describe what you want in plain language
+/pipeline build an incremental ETL job that pulls order data from the Stripe API, deduplicates against the existing Postgres table by idempotency key, backfills any gaps from the last 72 hours, and writes a reconciliation report to S3 on each run
 ```
 
 **Phases:**
@@ -27,7 +28,7 @@ Runs the full lifecycle for one feature or change. The spec phase is interactive
 If you already have a spec written, skip the interview:
 
 ```
-/pipeline specs/webhook-retry-queue.md
+/pipeline specs/stripe-etl-job.md
 ```
 
 **Artifacts produced:**
