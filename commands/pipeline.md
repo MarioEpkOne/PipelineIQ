@@ -8,11 +8,32 @@ The user's request/feature description is: $ARGUMENTS
 
 ## Argument Parsing
 
-Parse $ARGUMENTS for sentinel flags:
-- If arguments contain `SKIP_MERGE=true`: set SKIP_MERGE flag, strip it from arguments. The remaining text is the user's request / spec path.
-- If SKIP_MERGE is not present: SKIP_MERGE = false (default).
+Parse $ARGUMENTS for the `SKIP_MERGE=true` sentinel:
+- Match `SKIP_MERGE=true` only as a **whitespace-delimited token** (not as a substring of a filename or path). In practice this means: split arguments on whitespace, check if any token is exactly `SKIP_MERGE=true`, remove that token, rejoin the rest.
+- If found: set SKIP_MERGE = true; the remaining text is the user's request / spec path.
+- If not found: SKIP_MERGE = false (default).
 
 SKIP_MERGE is used in Phase 6 to control whether the merge workflow runs. When /pipeline is invoked standalone by a user, SKIP_MERGE is never present.
+
+**SKIP_MERGE contract** (do not change without updating pipeline-team.md):
+- When SKIP_MERGE=true, Phase 6 MUST output: `PIPELINE_COMPLETE spec=<path> worktree=<path> branch=<name> working_log=<path> audit=<path> remaining_errors=<N>`
+- pipeline-team.md depends on this exact output format for teammate coordination.
+
+---
+
+## Pre-flight -- Validate Reference Files
+
+Before starting any phase, verify that all required reference files exist. Check each path and collect any missing files into a list. If any are missing, STOP immediately with the full list — do not start Phase 1.
+
+Required files:
+- `commands/references/pipeline/phase2-impl-plan.md`
+- `commands/references/pipeline/phase3-impl.md`
+- `commands/references/pipeline/phase4-audit.md`
+- `commands/references/pipeline/phase5-fix.md`
+- `commands/references/pipeline/phase5-reaudit.md`
+- `commands/references/pipeline/phase6-merge.md`
+
+On failure: "Missing reference file(s): [list]. These files are required for the pipeline subagent prompts. Check that `commands/references/pipeline/` exists and contains all 6 phase files."
 
 ---
 
@@ -172,7 +193,17 @@ If the fix loop ran and errors remain after 2 cycles:
 
 ### Update learnings.md
 
-Reflect on the pipeline run. Write only actionable improvements to the pipeline process (not code patterns). Use the format already defined in `learnings.md` (create the file with a `# Pipeline Learnings` header if it does not exist). Append new entries; skip if nothing notable. Do NOT invoke learnings-review or modify any command/skill files.
+Reflect on the pipeline run. Write only actionable improvements to the pipeline process (not code patterns).
+
+Format each entry as:
+```
+## [Short title]
+**Phase affected**: [spec / impl-plan / impl / audit / fix]
+**What happened**: [one sentence — the slowdown or friction observed]
+**Suggestion**: [concrete change to the pipeline prompt or process]
+```
+
+If `learnings.md` does not exist: create it with a `# Pipeline Learnings` header. Append new entries; skip if nothing notable. Do NOT delete existing entries. Do NOT invoke learnings-review or modify any command/skill files.
 
 ### SKIP_MERGE branch:
 

@@ -134,6 +134,9 @@ Read `commands/pipeline.md` in full and follow every phase in it.
 
 Your arguments are: [SPEC_FILENAME] SKIP_MERGE=true
 
+(SKIP_MERGE=true MUST be a separate whitespace-delimited token, not
+embedded in a filename. pipeline.md's argument parser expects this.)
+
 The commands directory is at /mnt/c/Users/Epkone/.claude/commands/.
 If that path is unavailable, check ~/.claude/commands/ as a fallback.
 
@@ -225,7 +228,7 @@ After all merge queue items are processed and before writing the batch summary: 
 
 ### Update learnings
 
-After writing the summary, update `learnings.md` with any batch-level observations (patterns across specs, recurring failures, dependency surprises). Follow the same format and rules as pipeline.md's learnings section.
+After writing the summary, update `learnings.md` with any batch-level observations (patterns across specs, recurring failures, dependency surprises). Follow the same format and rules as pipeline.md's learnings section. Do NOT delete existing entries.
 
 ---
 
@@ -241,7 +244,7 @@ After writing the summary, update `learnings.md` with any batch-level observatio
 8. **Lead marks tasks complete** after its own successful merge. Never waits for the teammate.
 9. **Teammates do not read the lead's conversation history.** All needed context is in the spawn prompt.
 10. **A crashed lead triggers the resume protocol, not a full abort.**
-11. **Teammates read and follow `commands/pipeline.md` with SKIP_MERGE=true** -- they delegate all pipeline logic to pipeline.md, no inline re-implementation.
+11. **Teammates read and follow `commands/pipeline.md` with SKIP_MERGE=true** -- they delegate all pipeline logic to pipeline.md, no inline re-implementation. **Contract dependency:** pipeline.md's SKIP_MERGE output format (`PIPELINE_COMPLETE spec=... worktree=... branch=... working_log=... audit=... remaining_errors=...`) is parsed by the lead. If pipeline.md changes this format, pipeline-team breaks. Both files carry matching contract markers.
 12. **Shutdown requests wait up to 5 minutes before force-abandon.**
 13. **Patch-notes runs once after all merges**, in the lead's batch summary phase. Not after each merge, not by teammates.
 
