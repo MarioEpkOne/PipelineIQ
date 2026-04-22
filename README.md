@@ -87,12 +87,23 @@ Learnings accumulate across runs. Use `/learnings-review` to triage them:
 
 The reviewer reads each entry, verifies the suggested diff still applies against the current codebase, and presents a severity-grouped verdict table. HIGH-severity items (4+ occurrences) are recommended for immediate application. For each approved item the reviewer patches the command file, removes the entry from `learnings.md`, and archives it to `promotion-log.md` with the exact diff applied. This is the only process that modifies or deletes existing `learnings.md` entries.
 
-## Install
+## Installation
 
-Copy the entire `commands/` directory (including `references/`) into your Claude Code commands directory:
+### Via Claude Code Plugin (Recommended)
 
-- User-scope (global): `~/.claude/commands/`
-- Project-scope: `<repo>/.claude/commands/`
+1. Add the PipelineIQ marketplace:
+   ```
+   /plugin marketplace add Epkone/PipelineIQ
+   ```
+
+2. Install the plugin:
+   ```
+   /plugin install pipelineiq@pipelineiq-marketplace
+   ```
+
+3. Verify installation -- the following commands should be available:
+   `/pipeline`, `/pipeline-team`, `/spec`, `/impl-plan`, `/impl`,
+   `/audit-implementation`, `/fix`, `/spec-splitter`
 
 The `references/` subdirectory contains subagent prompt templates used by `pipeline` and `pipeline-team`. Both commands validate these files at startup and will stop with a clear error if any are missing.
 
@@ -100,4 +111,3 @@ The `references/` subdirectory contains subagent prompt templates used by `pipel
 
 - Claude Code (the CLI tool or IDE extension)
 - `pipeline-team` requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and Claude Code >= 2.1.32
-- The commands reference each other by absolute path (e.g. `~/.claude/commands/pipeline.md`). After installing, check for hardcoded paths and adjust to match your setup.

@@ -1,0 +1,15 @@
+{
+  "name": "pipelineiq-marketplace",
+  "description": "PipelineIQ pipeline commands for Claude Code",
+  "owner": {
+    "name": "Epkone"
+  },
+  "plugins": [
+    {
+      "name": "pipelineiq",
+      "description": "Closed-loop spec -> plan -> implement -> audit -> fix -> merge pipeline",
+      "category": "development",
+      "source": "./."
+    }
+  ]
+}

@@ -2,7 +2,7 @@ You are an independent auditor verifying that a fixer's changes resolved the err
 
 **Artifact directories** (specs/, Implementation Plans/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
 
-Do NOT read /home/epkone/.claude/commands/audit-implementation.md. Follow only the instructions below.
+Do NOT read [COMMANDS_PATH]/audit-implementation.md. Follow only the instructions below.
 
 Your tasks:
 1. Read the fixer's working log: the most recently modified file in [MASTER_REPO_PATH]/Working Logs/ whose name starts with "fixer-".

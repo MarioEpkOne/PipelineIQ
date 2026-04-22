@@ -21,19 +21,37 @@ SKIP_MERGE is used in Phase 6 to control whether the merge workflow runs. When /
 
 ---
 
+## Resolve COMMANDS_PATH
+
+Determine the absolute path to this plugin's `commands/` directory. This is used to locate sibling command files and reference templates.
+
+Discovery order:
+1. Search the plugin cache: glob for `~/.claude/plugins/cache/**/pipelineiq/.claude-plugin/plugin.json`.
+   If found: COMMANDS_PATH = <parent of .claude-plugin>/commands
+2. If not found: walk up from CWD looking for `.claude-plugin/plugin.json` where the
+   adjacent `commands/` directory contains `pipeline.md`.
+   If found: COMMANDS_PATH = <that commands/ directory>
+3. If neither found: STOP with "Cannot locate PipelineIQ plugin root. Ensure the plugin
+   is installed via '/plugin install pipelineiq' or you are in the PipelineIQ repo."
+
+Verify: check that COMMANDS_PATH/references/pipeline/ exists.
+Store COMMANDS_PATH as an absolute path for use in all subsequent phases.
+
+---
+
 ## Pre-flight -- Validate Reference Files
 
 Before starting any phase, verify that all required reference files exist. Check each path and collect any missing files into a list. If any are missing, STOP immediately with the full list — do not start Phase 1.
 
 Required files:
-- `commands/references/pipeline/phase2-impl-plan.md`
-- `commands/references/pipeline/phase3-impl.md`
-- `commands/references/pipeline/phase4-audit.md`
-- `commands/references/pipeline/phase5-fix.md`
-- `commands/references/pipeline/phase5-reaudit.md`
-- `commands/references/pipeline/phase6-merge.md`
+- `[COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md`
+- `[COMMANDS_PATH]/references/pipeline/phase3-impl.md`
+- `[COMMANDS_PATH]/references/pipeline/phase4-audit.md`
+- `[COMMANDS_PATH]/references/pipeline/phase5-fix.md`
+- `[COMMANDS_PATH]/references/pipeline/phase5-reaudit.md`
+- `[COMMANDS_PATH]/references/pipeline/phase6-merge.md`
 
-On failure: "Missing reference file(s): [list]. These files are required for the pipeline subagent prompts. Check that `commands/references/pipeline/` exists and contains all 6 phase files."
+On failure: "Missing reference file(s): [list]. These files are required for the pipeline subagent prompts. Check that `[COMMANDS_PATH]/references/pipeline/` exists and contains all 6 phase files."
 
 ---
 
@@ -61,7 +79,7 @@ Run the full spec workflow inline -- do NOT spawn a subagent for this phase, use
 
 ### Phase 1a -- Run the Spec Workflow
 
-Read `/home/epkone/.claude/commands/spec.md` in full and follow every phase in it exactly. Note the exact filename written to `specs/`.
+Read `[COMMANDS_PATH]/spec.md` in full and follow every phase in it exactly. Note the exact filename written to `specs/`.
 
 ---
 
@@ -85,9 +103,9 @@ Store the worktree path as `WORKTREE_PATH` and branch as `WORKTREE_BRANCH`.
 
 --- Phase 2/6: IMPL-PLAN (specs/<filename>) ---
 
-Read `commands/references/pipeline/phase2-impl-plan.md`. If the file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline/phase2-impl-plan.md. Cannot proceed."
+Read `[COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md. Cannot proceed."
 
-Fill in variables: [SPEC_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH].
+Fill in variables: [SPEC_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
 Launch a general-purpose Agent with the filled prompt.
 
 Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Implementation Plans/` for the most recently modified file if not reported).
@@ -102,9 +120,9 @@ Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Impl
 
 --- Phase 3/6: IMPL (<plan filename>) ---
 
-Read `commands/references/pipeline/phase3-impl.md`. If the file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline/phase3-impl.md. Cannot proceed."
+Read `[COMMANDS_PATH]/references/pipeline/phase3-impl.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase3-impl.md. Cannot proceed."
 
-Fill in variables: [IMPL_PLAN_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH].
+Fill in variables: [IMPL_PLAN_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
 Launch a general-purpose Agent with the filled prompt.
 
 Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Working Logs/` for the most recently modified file).
@@ -119,9 +137,9 @@ Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Wo
 
 --- Phase 4/6: AUDIT (<working log filename>) ---
 
-Read `commands/references/pipeline/phase4-audit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline/phase4-audit.md. Cannot proceed."
+Read `[COMMANDS_PATH]/references/pipeline/phase4-audit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase4-audit.md. Cannot proceed."
 
-Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH].
+Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH].
 Launch a general-purpose Agent with the filled prompt.
 
 Wait for completion. Parse the audit subagent's output for the saved audit path (the subagent outputs "Audit saved to `Working Logs/audit-impl--...md`"). Construct the full path as `[MASTER_REPO_PATH]/Working Logs/<parsed-filename>`. Store as `AUDIT_FILENAME`. If the subagent's output does not contain a parseable audit path, fall back to the most recently modified `audit-impl--*.md` file in `[MASTER_REPO_PATH]/Working Logs/`. Log warning: "Could not parse audit path from subagent output -- using fallback."
@@ -144,9 +162,9 @@ Set `MAX_LOOPS = 2`. Initialize `loop_count = 0`.
 
 --- Phase 5/6: FIX (loop {loop_count + 1}/{MAX_LOOPS}, errors: {error_count}) ---
 
-Read `commands/references/pipeline/phase5-fix.md`. If the file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline/phase5-fix.md. Cannot proceed."
+Read `[COMMANDS_PATH]/references/pipeline/phase5-fix.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase5-fix.md. Cannot proceed."
 
-Fill in variables: [AUDIT_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH].
+Fill in variables: [AUDIT_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
 Launch a general-purpose Agent with the filled prompt.
 
 Wait for the fixer to complete.
@@ -157,9 +175,9 @@ Wait for the fixer to complete.
 
 --- RE-AUDIT (after fix loop {loop_count + 1}) ---
 
-Read `commands/references/pipeline/phase5-reaudit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline/phase5-reaudit.md. Cannot proceed."
+Read `[COMMANDS_PATH]/references/pipeline/phase5-reaudit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase5-reaudit.md. Cannot proceed."
 
-Fill in variables: [WORKING_LOG_FILENAME], [AUDIT_FILENAME], [MASTER_REPO_PATH], {loop_count}.
+Fill in variables: [WORKING_LOG_FILENAME], [AUDIT_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH], {loop_count}.
 Launch a general-purpose Agent with the filled prompt.
 
 Parse the "Remaining Actionable Errors" section from the appended content in `[AUDIT_FILENAME]`.
@@ -197,7 +215,7 @@ Reflect on the pipeline run across all phases. Identify only actionable improvem
 
 **Step 1 -- Read existing learnings.md**
 
-Read `learnings.md` at `/mnt/c/Users/Epkone/PipelineIQ/learnings.md` (the PipelineIQ project root -- all pipeline runs write to this single global file regardless of which project they execute in). If it does not exist, create it with the template:
+Read `learnings.md` at `[MASTER_REPO_PATH]/learnings.md`. If it does not exist, create it with the template:
 
 ```
 # Pipeline Learnings
@@ -239,7 +257,7 @@ If this run was smooth with nothing notable: skip to the end (do not write empty
 
 **Step 3 -- Deduplicate against existing entries**
 
-For each new observation, read through existing entries in learnings.md and determine whether the observation describes the same class of problem as an existing entry. Use semantic judgment -- different phrasing of the same underlying issue counts as a match. For example, "Plan Scope misses sync targets" and "Impl plan scope didn't include ~/.claude/commands/ files" are the same class of problem.
+For each new observation, read through existing entries in learnings.md and determine whether the observation describes the same class of problem as an existing entry. Use semantic judgment -- different phrasing of the same underlying issue counts as a match. For example, "Plan Scope misses sync targets" and "Impl plan scope didn't include commands/ files" are the same class of problem.
 
 - **If match found**: This is a recurrence. Proceed to Step 4 (update existing entry).
 - **If no match**: This is a new observation. Proceed to Step 5 (create new entry).
@@ -316,7 +334,7 @@ File: `commands/[filename]`
   - Then go idle.
 
 **If SKIP_MERGE = false (default, standalone /pipeline):**
-  - Read `commands/references/pipeline/phase6-merge.md`. If the file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline/phase6-merge.md. Cannot proceed."
+  - Read `[COMMANDS_PATH]/references/pipeline/phase6-merge.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase6-merge.md. Cannot proceed."
   - Follow the merge workflow. Variables: WORKTREE_PATH, WORKTREE_BRANCH, MASTER_REPO_PATH.
   - Suggest next steps:
     - "Run manual tests for items marked 'requires runtime verification' in the audit"

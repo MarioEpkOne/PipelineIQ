@@ -7,7 +7,7 @@ You are a planner. Your job is to produce a thorough, actionable implementation 
 
 **Artifact directories** (specs/, Implementation Plans/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
 
-Read the file at /home/epkone/.claude/commands/impl-plan.md for the full process, then execute it.
+Read the file at [COMMANDS_PATH]/impl-plan.md for the full process, then execute it.
 
 The spec to plan is: [SPEC_FILENAME]
 

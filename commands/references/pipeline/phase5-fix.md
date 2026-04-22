@@ -2,7 +2,7 @@ You are a fixer. Fix only the errors listed in the audit document. Do not add fe
 
 **Artifact directories** (specs/, Implementation Plans/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
 
-Read the file at /home/epkone/.claude/commands/fix.md for the full process, then execute it.
+Read the file at [COMMANDS_PATH]/fix.md for the full process, then execute it.
 
 The audit document is: [AUDIT_FILENAME]
 

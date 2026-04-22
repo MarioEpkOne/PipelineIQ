@@ -13,6 +13,24 @@ The argument (if any) is: $ARGUMENTS
 
 ---
 
+## Resolve COMMANDS_PATH
+
+Determine the absolute path to this plugin's `commands/` directory. This is used to locate sibling command files and reference templates.
+
+Discovery order:
+1. Search the plugin cache: glob for `~/.claude/plugins/cache/**/pipelineiq/.claude-plugin/plugin.json`.
+   If found: COMMANDS_PATH = <parent of .claude-plugin>/commands
+2. If not found: walk up from CWD looking for `.claude-plugin/plugin.json` where the
+   adjacent `commands/` directory contains `pipeline.md`.
+   If found: COMMANDS_PATH = <that commands/ directory>
+3. If neither found: STOP with "Cannot locate PipelineIQ plugin root. Ensure the plugin
+   is installed via '/plugin install pipelineiq' or you are in the PipelineIQ repo."
+
+Verify: check that COMMANDS_PATH/references/pipeline-team/ exists.
+Store COMMANDS_PATH as an absolute path for use in all subsequent phases.
+
+---
+
 ## Phase 0 -- Pre-flight Checks (Lead, Inline)
 
 --- /pipeline-team: PRE-FLIGHT ---
@@ -72,6 +90,14 @@ If not in `bypassPermissions` or `auto` mode: warn that permission prompts may p
 **Check 7 -- Display mode note**
 
 Print: "Display mode: in-process (Shift+Down to cycle teammates). Split-pane requires tmux/iTerm2."
+
+**Check 8 -- Validate reference files**
+
+Verify that the following required reference files exist:
+- `[COMMANDS_PATH]/references/pipeline-team/failure-handling.md`
+- `[COMMANDS_PATH]/references/pipeline-team/resume-protocol.md`
+
+If either is missing: STOP with "Missing reference file(s): [list]. These files are required for pipeline-team. Check that `[COMMANDS_PATH]/references/pipeline-team/` exists."
 
 ---
 
@@ -140,15 +166,14 @@ For each spec, spawn a teammate with this prompt (fill in [SPEC_FILENAME]):
 You are a pipeline worker. Your job is to run the full implementation
 pipeline for exactly ONE spec file, then report back to the lead.
 
-Read `commands/pipeline.md` in full and follow every phase in it.
+Read `[COMMANDS_PATH]/pipeline.md` in full and follow every phase in it.
 
 Your arguments are: [SPEC_FILENAME] SKIP_MERGE=true
 
 (SKIP_MERGE=true MUST be a separate whitespace-delimited token, not
 embedded in a filename. pipeline.md's argument parser expects this.)
 
-The commands directory is at /mnt/c/Users/Epkone/.claude/commands/.
-If that path is unavailable, check ~/.claude/commands/ as a fallback.
+The commands directory is at [COMMANDS_PATH].
 
 When pipeline.md reaches Phase 6 with SKIP_MERGE=true, it will output
 a structured PIPELINE_COMPLETE report. Forward that exact output to the
@@ -206,17 +231,17 @@ The lead processes merge requests sequentially, one at a time.
 
 ## Phase 5 -- Failure Handling (Lead)
 
-Read `commands/references/pipeline-team/failure-handling.md` and follow the failure handling protocol. Variables: WLOG_PATH, WORKTREE_PATH, SPEC_FILENAME, REASON.
+Read `[COMMANDS_PATH]/references/pipeline-team/failure-handling.md` and follow the failure handling protocol. Variables: WLOG_PATH, WORKTREE_PATH, SPEC_FILENAME, REASON, COMMANDS_PATH.
 
-If the reference file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline-team/failure-handling.md. Cannot proceed."
+If the reference file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline-team/failure-handling.md. Cannot proceed."
 
 ---
 
 ## Resume Protocol -- After Lead Session Crash
 
-Read `commands/references/pipeline-team/resume-protocol.md` and follow the resume protocol.
+Read `[COMMANDS_PATH]/references/pipeline-team/resume-protocol.md` and follow the resume protocol.
 
-If the reference file does not exist or is empty, STOP with: "Reference file not found: commands/references/pipeline-team/resume-protocol.md. Cannot proceed."
+If the reference file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline-team/resume-protocol.md. Cannot proceed."
 
 ---
 

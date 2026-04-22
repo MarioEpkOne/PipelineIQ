@@ -16,8 +16,7 @@ Failure reason reported: [REASON]
 Steps:
 1. Read the working log to find the last failed step and error.
 2. Read the relevant source files in the worktree.
-3. Apply the minimum fix. Follow the fix logic in /mnt/c/Users/Epkone/.claude/commands/fix.md.
-   If that path is unavailable, check ~/.claude/commands/fix.md as a fallback.
+3. Apply the minimum fix. Follow the fix logic in [COMMANDS_PATH]/fix.md.
 4. Report: REPAIR_SUCCESS or REPAIR_FAILURE with a brief explanation.
    Do not audit. Do not merge. Just fix and report.
 ```

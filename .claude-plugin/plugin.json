@@ -1,0 +1,13 @@
+{
+  "name": "pipelineiq",
+  "version": "1.0.0",
+  "description": "Closed-loop spec -> plan -> implement -> audit -> fix -> merge pipeline for Claude Code",
+  "author": {
+    "name": "Epkone",
+    "url": "https://github.com/Epkone"
+  },
+  "repository": "https://github.com/Epkone/PipelineIQ",
+  "license": "MIT",
+  "keywords": ["pipeline", "spec", "implementation", "audit", "code-review", "automation"],
+  "skills": "./commands/"
+}
