@@ -302,6 +302,7 @@ File: `commands/[filename]`
 - Do NOT create entries about code quality, project architecture, or implementation patterns -- only pipeline process friction
 - If an observation matches an entry already in `promotion-log.md` (a previously applied fix), this is a regression: create a new entry at LOW with a note: "Previously applied on [date] -- see promotion-log.md. Recurrence suggests the fix was insufficient."
 - If the target file has changed so much a diff concept no longer applies, regenerate from scratch. If the problem appears fixed, note: "May be resolved -- verify before applying" but do NOT remove the entry.
+- If the pipeline ran inside a project other than PipelineIQ, include the project name or path in each **Seen in** entry (e.g., "2026-04-22 (spec--widgets, project: /path/to/other)") to distinguish cross-project observations.
 
 ### SKIP_MERGE branch:
 
