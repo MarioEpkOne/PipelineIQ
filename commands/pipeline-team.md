@@ -54,6 +54,8 @@ Parse the argument to determine the scan directory and optional filter:
 2. If argument contains `/` or ends with `/`: treat the argument as a directory path. Scan that directory.
 3. Otherwise: treat the argument as a filename filter. Scan `specs/team/` and apply the filter (case-insensitive filename match).
 
+If the resolved directory does not exist, STOP: "Directory not found: [path]."
+
 In all cases, never scan `specs/applied/` or `specs/split/`. List all `.md` files in the resolved directory (non-recursive -- do not descend into subdirectories).
 
 If 0 files found:
