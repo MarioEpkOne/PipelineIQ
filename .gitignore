@@ -1,0 +1,17 @@
+# Pipeline artifacts (generated per-run)
+Implementation Plans/
+Working Logs/
+Retros/
+specs/
+learnings.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
