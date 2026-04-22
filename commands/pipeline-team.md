@@ -154,7 +154,7 @@ Initialize the **merge queue**: write `~/.claude/teams/<team-name>/merge-queue.j
 
 --- /pipeline-team: SPAWNING WAVE N (specs: [list]) ---
 
-For each spec in the current unblocked wave (max 5 active teammates at any time), spawn a **fresh teammate** using the template below.
+For each spec in the current unblocked wave (max 5 active teammates at any time), spawn a **fresh teammate** with model=sonnet using the template below.
 
 When a teammate slot opens (a teammate sends `PIPELINE_COMPLETE` or `PIPELINE_FAILURE`), spawn the next unblocked spec immediately.
 

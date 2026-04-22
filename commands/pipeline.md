@@ -69,6 +69,16 @@ Each phase failure -> STOP + report (except Phase 3 partial -> continue)
 
 ---
 
+## Model Routing
+
+| Phase | Model | Rationale |
+|---|---|---|
+| 2 Impl-Plan | opus | Deep reasoning for architecture and planning |
+| 3 Impl | sonnet | Mechanical execution of well-specified steps |
+| 4 Audit | opus | Independent judgment and architectural review |
+| 5 Fix | sonnet | Mechanical execution of targeted fixes |
+| 5 Re-audit | sonnet | Verification of specific fix results |
+
 ## Phase 1 -- Spec (Interactive, Inline)
 
 --- Phase 1/6: SPEC ---
@@ -106,7 +116,7 @@ Store the worktree path as `WORKTREE_PATH` and branch as `WORKTREE_BRANCH`.
 Read `[COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md. Cannot proceed."
 
 Fill in variables: [SPEC_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Launch a general-purpose Agent with the filled prompt.
+Launch a general-purpose Agent with model=opus and the filled prompt.
 
 Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Implementation Plans/` for the most recently modified file if not reported).
 
@@ -123,13 +133,15 @@ Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Impl
 Read `[COMMANDS_PATH]/references/pipeline/phase3-impl.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase3-impl.md. Cannot proceed."
 
 Fill in variables: [IMPL_PLAN_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Launch a general-purpose Agent with the filled prompt.
+Launch a general-purpose Agent with model=sonnet and the filled prompt.
 
 Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Working Logs/` for the most recently modified file).
 
 **Decision tree:**
 - If subagent completes (even with some FAILED steps) -> proceed to Phase 4
 - If subagent crashes or produces no output -> STOP. Report: "Impl subagent failed with no output. Last known artifact: [working log if any]." Do not proceed.
+
+**Escalation advisory**: If the impl subagent's working log shows a step that failed 3 retries, log "Model escalation candidate: step N failed 3 retries on Sonnet" in the working log for manual review. No automatic re-dispatch.
 
 ---
 
@@ -140,7 +152,7 @@ Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Wo
 Read `[COMMANDS_PATH]/references/pipeline/phase4-audit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase4-audit.md. Cannot proceed."
 
 Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Launch a general-purpose Agent with the filled prompt.
+Launch a general-purpose Agent with model=opus and the filled prompt.
 
 Wait for completion. Parse the audit subagent's output for the saved audit path (the subagent outputs "Audit saved to `Working Logs/audit-impl--...md`"). Construct the full path as `[MASTER_REPO_PATH]/Working Logs/<parsed-filename>`. Store as `AUDIT_FILENAME`. If the subagent's output does not contain a parseable audit path, fall back to the most recently modified `audit-impl--*.md` file in `[MASTER_REPO_PATH]/Working Logs/`. Log warning: "Could not parse audit path from subagent output -- using fallback."
 
@@ -165,7 +177,7 @@ Set `MAX_LOOPS = 2`. Initialize `loop_count = 0`.
 Read `[COMMANDS_PATH]/references/pipeline/phase5-fix.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase5-fix.md. Cannot proceed."
 
 Fill in variables: [AUDIT_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Launch a general-purpose Agent with the filled prompt.
+Launch a general-purpose Agent with model=sonnet and the filled prompt.
 
 Wait for the fixer to complete.
 
@@ -178,7 +190,7 @@ Wait for the fixer to complete.
 Read `[COMMANDS_PATH]/references/pipeline/phase5-reaudit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase5-reaudit.md. Cannot proceed."
 
 Fill in variables: [WORKING_LOG_FILENAME], [AUDIT_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH], {loop_count}.
-Launch a general-purpose Agent with the filled prompt.
+Launch a general-purpose Agent with model=sonnet and the filled prompt.
 
 Parse the "Remaining Actionable Errors" section from the appended content in `[AUDIT_FILENAME]`.
 
