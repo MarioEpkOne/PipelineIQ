@@ -228,7 +228,23 @@ After all merge queue items are processed and before writing the batch summary: 
 
 ### Update learnings
 
-After writing the summary, update `learnings.md` with any batch-level observations (patterns across specs, recurring failures, dependency surprises). Follow the same format and rules as pipeline.md's learnings section. Do NOT delete existing entries.
+After writing the batch summary, update `learnings.md` using the same smart learnings process defined in `pipeline.md`'s Phase 6 "Update learnings.md" section. Follow all 6 steps (read existing, generate observations, deduplicate, update/create entries, write file).
+
+**Batch-specific additions to the standard process:**
+
+1. **Gather observations from all teammates**: Read all teammate working logs and audit documents to identify friction, slowdowns, or failures across the batch. Each teammate's pipeline run is an independent source of observations.
+
+2. **Teammate occurrence counting**: If multiple teammates independently hit the same issue, count each teammate as a separate occurrence. For example, if 3 out of 5 teammates hit the same friction point, that is +3 occurrences for that entry.
+
+3. **Batch-level observations**: In addition to per-teammate observations, look for batch-level patterns:
+   - Did the dependency graph miss an edge? Did specs conflict at merge time?
+   - Were there recurring failures across specs? Did the fix loop churn on the same class of error?
+   - Did wave scheduling cause unnecessary delays?
+   - Were there merge conflicts that a better spec dependency analysis could have prevented?
+
+4. **Single batch = one occurrence per teammate per learning.** If the same teammate hits the same issue multiple times within their pipeline run, that counts as one occurrence from that teammate.
+
+Follow all constraints from pipeline.md's learnings section: diffs target `commands/` only, never delete entries, never invoke /learnings-review, err toward false separation.
 
 ---
 

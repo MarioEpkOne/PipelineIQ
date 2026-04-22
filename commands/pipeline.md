@@ -193,17 +193,115 @@ If the fix loop ran and errors remain after 2 cycles:
 
 ### Update learnings.md
 
-Reflect on the pipeline run. Write only actionable improvements to the pipeline process (not code patterns).
+Reflect on the pipeline run across all phases. Identify only actionable improvements to the pipeline process itself -- not code patterns, not project-specific observations. A pipeline learning is something that, if addressed, would make future pipeline runs across ANY project work better.
 
-Format each entry as:
+**Step 1 -- Read existing learnings.md**
+
+Read `learnings.md` at `/mnt/c/Users/Epkone/PipelineIQ/learnings.md` (the PipelineIQ project root -- all pipeline runs write to this single global file regardless of which project they execute in). If it does not exist, create it with the template:
+
 ```
-## [Short title]
-**Phase affected**: [spec / impl-plan / impl / audit / fix]
-**What happened**: [one sentence — the slowdown or friction observed]
-**Suggestion**: [concrete change to the pipeline prompt or process]
+# Pipeline Learnings
+
+## HIGH
+
+---
+
+## MEDIUM
+
+---
+
+## LOW
 ```
 
-If `learnings.md` does not exist: create it with a `# Pipeline Learnings` header. Append new entries; skip if nothing notable. Do NOT delete existing entries. Do NOT invoke learnings-review or modify any command/skill files.
+Parse all existing entries, noting their titles, phases, occurrence counts, and severity tiers.
+
+If the file exists but entries lack **Occurrences** / **Seen in** / **Suggested diff** fields (old format), migrate each entry before proceeding:
+- Set Occurrences to 1
+- Set Seen in to "pre-migration"
+- Set severity to LOW
+- Read the target command file referenced in the suggestion and generate a diff
+- Rewrite the entire file in the new format (severity-tiered with all required fields)
+
+**Step 2 -- Generate observations**
+
+For this pipeline run, identify any friction, slowdowns, or failures attributable to the pipeline process (not the code being implemented). Consider:
+- Did the impl plan miss something the spec required?
+- Did the impl agent deviate from the plan? Why?
+- Did the audit catch real issues? Did it flag false positives?
+- Did the fix loop resolve errors, or did it churn?
+- Was a phase unnecessarily slow or redundant?
+
+For each observation, determine:
+- Which command file in `commands/` would need to change to prevent this (diffs target `commands/` only -- no diffs for skills, CLAUDE.md, or files outside the pipeline command directory)
+- What the specific change would be
+
+If this run was smooth with nothing notable: skip to the end (do not write empty entries).
+
+**Step 3 -- Deduplicate against existing entries**
+
+For each new observation, read through existing entries in learnings.md and determine whether the observation describes the same class of problem as an existing entry. Use semantic judgment -- different phrasing of the same underlying issue counts as a match. For example, "Plan Scope misses sync targets" and "Impl plan scope didn't include ~/.claude/commands/ files" are the same class of problem.
+
+- **If match found**: This is a recurrence. Proceed to Step 4 (update existing entry).
+- **If no match**: This is a new observation. Proceed to Step 5 (create new entry).
+
+When uncertain whether two observations are the same problem, err on the side of creating a new entry. False separation is safer than false deduplication.
+
+**Step 4 -- Update existing entry (recurrence)**
+
+For the matched entry:
+1. Increment the occurrence count
+2. Add the current date and spec/batch identifier to the **Seen in** list
+3. Update **What happened** to incorporate the new observation if it adds useful detail (do not just repeat -- enrich)
+4. Recalculate severity: 1 = LOW, 2-3 = MEDIUM, 4+ = HIGH
+5. If severity changed: move the entry to the correct tier section
+6. Re-read the target command file (the one in **Suggested diff**) and regenerate the diff against its current state. Update **Last verified** to today's date.
+
+**One pipeline run = one occurrence per learning.** Even if the same problem manifested multiple times within this single run, count it as one occurrence.
+
+**Step 5 -- Create new entry**
+
+1. Read the target command file to draft an exact diff
+2. Create a new entry under the **LOW** section with:
+   - Title (short, descriptive)
+   - Phase affected
+   - Occurrences: 1
+   - Seen in: today's date and spec/batch identifier
+   - What happened (one sentence)
+   - Suggestion (concrete change)
+   - Suggested diff (file path in `commands/` + diff block). If the target file cannot be read (missing, wrong path), set Suggested diff to "Unable to generate -- target file not found: [path]". Still track the observation.
+   - Last verified: today's date
+
+**Step 6 -- Write learnings.md**
+
+Rewrite the full `learnings.md` with all entries properly sorted:
+- HIGH tier first, then MEDIUM, then LOW
+- Within each tier: highest occurrence count first, then most recent date
+- Preserve the `---` separators between tiers
+
+Each entry must follow this exact format:
+
+```
+### [Title]
+**Phase affected**: [phase]
+**Occurrences**: [N]
+**Seen in**: [date (spec-name), date (spec-name), ...]
+**What happened**: [description]
+**Suggestion**: [concrete change]
+**Suggested diff**:
+File: `commands/[filename]`
+```diff
+- old line
++ new line
+```
+**Last verified**: [date]
+```
+
+**Important constraints:**
+- Do NOT invoke /learnings-review or modify any command/skill files
+- Do NOT delete or discard existing entries (even if they seem stale)
+- Do NOT create entries about code quality, project architecture, or implementation patterns -- only pipeline process friction
+- If an observation matches an entry already in `promotion-log.md` (a previously applied fix), this is a regression: create a new entry at LOW with a note: "Previously applied on [date] -- see promotion-log.md. Recurrence suggests the fix was insufficient."
+- If the target file has changed so much a diff concept no longer applies, regenerate from scratch. If the problem appears fixed, note: "May be resolved -- verify before applying" but do NOT remove the entry.
 
 ### SKIP_MERGE branch:
 
