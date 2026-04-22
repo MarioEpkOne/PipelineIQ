@@ -2,8 +2,11 @@ You are an independent auditor. Evaluate the implementation against the spec. Do
 
 **Artifact directories** (specs/, Implementation Plans/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
 
-Read the file at [COMMANDS_PATH]/audit-implementation.md for the full process, then execute it.
+Do NOT read [COMMANDS_PATH]/audit-implementation.md — the full process is embedded below by the orchestrator.
 
 The working log to analyze is: [WORKING_LOG_FILENAME]
 
-After reading audit-implementation.md, follow every phase in it exactly.
+Follow every phase in the embedded command file exactly.
+
+---
+[COMMAND_FILE_CONTENT]

@@ -113,9 +113,9 @@ Store the worktree path as `WORKTREE_PATH` and branch as `WORKTREE_BRANCH`.
 
 --- Phase 2/6: IMPL-PLAN (specs/<filename>) ---
 
-Read `[COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md. Cannot proceed."
-
-Fill in variables: [SPEC_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
+Read `[COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md`.
+Read `[COMMANDS_PATH]/impl-plan.md` and use its content to fill [COMMAND_FILE_CONTENT].
+Fill in variables: [SPEC_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH], [COMMAND_FILE_CONTENT].
 Launch a general-purpose Agent with model=opus and the filled prompt.
 
 Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Implementation Plans/` for the most recently modified file if not reported).
@@ -130,9 +130,9 @@ Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Impl
 
 --- Phase 3/6: IMPL (<plan filename>) ---
 
-Read `[COMMANDS_PATH]/references/pipeline/phase3-impl.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase3-impl.md. Cannot proceed."
-
-Fill in variables: [IMPL_PLAN_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
+Read `[COMMANDS_PATH]/references/pipeline/phase3-impl.md`.
+Read `[COMMANDS_PATH]/impl.md` and use its content to fill [COMMAND_FILE_CONTENT].
+Fill in variables: [IMPL_PLAN_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH], [COMMAND_FILE_CONTENT].
 Launch a general-purpose Agent with model=sonnet and the filled prompt.
 
 Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Working Logs/` for the most recently modified file).
@@ -149,9 +149,9 @@ Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Wo
 
 --- Phase 4/6: AUDIT (<working log filename>) ---
 
-Read `[COMMANDS_PATH]/references/pipeline/phase4-audit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase4-audit.md. Cannot proceed."
-
-Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH].
+Read `[COMMANDS_PATH]/references/pipeline/phase4-audit.md`.
+Read `[COMMANDS_PATH]/audit-implementation.md` and use its content to fill [COMMAND_FILE_CONTENT].
+Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH], [COMMAND_FILE_CONTENT].
 Launch a general-purpose Agent with model=opus and the filled prompt.
 
 Wait for completion. Parse the audit subagent's output for the saved audit path (the subagent outputs "Audit saved to `Working Logs/audit-impl--...md`"). Construct the full path as `[MASTER_REPO_PATH]/Working Logs/<parsed-filename>`. Store as `AUDIT_FILENAME`. If the subagent's output does not contain a parseable audit path, fall back to the most recently modified `audit-impl--*.md` file in `[MASTER_REPO_PATH]/Working Logs/`. Log warning: "Could not parse audit path from subagent output -- using fallback."
@@ -174,9 +174,9 @@ Set `MAX_LOOPS = 2`. Initialize `loop_count = 0`.
 
 --- Phase 5/6: FIX (loop {loop_count + 1}/{MAX_LOOPS}, errors: {error_count}) ---
 
-Read `[COMMANDS_PATH]/references/pipeline/phase5-fix.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase5-fix.md. Cannot proceed."
-
-Fill in variables: [AUDIT_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
+Read `[COMMANDS_PATH]/references/pipeline/phase5-fix.md`.
+Read `[COMMANDS_PATH]/fix.md` and use its content to fill [COMMAND_FILE_CONTENT].
+Fill in variables: [AUDIT_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH], [COMMAND_FILE_CONTENT].
 Launch a general-purpose Agent with model=sonnet and the filled prompt.
 
 Wait for the fixer to complete.
@@ -187,8 +187,7 @@ Wait for the fixer to complete.
 
 --- RE-AUDIT (after fix loop {loop_count + 1}) ---
 
-Read `[COMMANDS_PATH]/references/pipeline/phase5-reaudit.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase5-reaudit.md. Cannot proceed."
-
+Read `[COMMANDS_PATH]/references/pipeline/phase5-reaudit.md`.
 Fill in variables: [WORKING_LOG_FILENAME], [AUDIT_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH], {loop_count}.
 Launch a general-purpose Agent with model=sonnet and the filled prompt.
 
@@ -346,7 +345,7 @@ File: `commands/[filename]`
   - Then go idle.
 
 **If SKIP_MERGE = false (default, standalone /pipeline):**
-  - Read `[COMMANDS_PATH]/references/pipeline/phase6-merge.md`. If the file does not exist or is empty, STOP with: "Reference file not found: [COMMANDS_PATH]/references/pipeline/phase6-merge.md. Cannot proceed."
+  - Read `[COMMANDS_PATH]/references/pipeline/phase6-merge.md`.
   - Follow the merge workflow. Variables: WORKTREE_PATH, WORKTREE_BRANCH, MASTER_REPO_PATH.
   - Suggest next steps:
     - "Run manual tests for items marked 'requires runtime verification' in the audit"
