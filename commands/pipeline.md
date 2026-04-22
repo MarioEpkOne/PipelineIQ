@@ -124,7 +124,7 @@ Read `commands/references/pipeline/phase4-audit.md`. If the file does not exist 
 Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH].
 Launch a general-purpose Agent with the filled prompt.
 
-Wait for completion. Read the audit document from `[MASTER_REPO_PATH]/Retros/` (most recently modified file). Store its path as `AUDIT_FILENAME`.
+Wait for completion. Parse the audit subagent's output for the saved audit path (the subagent outputs "Audit saved to `Working Logs/audit-impl--...md`"). Construct the full path as `[MASTER_REPO_PATH]/Working Logs/<parsed-filename>`. Store as `AUDIT_FILENAME`. If the subagent's output does not contain a parseable audit path, fall back to the most recently modified `audit-impl--*.md` file in `[MASTER_REPO_PATH]/Working Logs/`. Log warning: "Could not parse audit path from subagent output -- using fallback."
 
 **Parse the "Actionable Errors" section:**
 - Count the numbered error entries (ignore the "Not actionable" list)
@@ -164,7 +164,7 @@ Launch a general-purpose Agent with the filled prompt.
 
 Parse the "Remaining Actionable Errors" section from the appended content in `[AUDIT_FILENAME]`.
 
-**Persist remaining errors to disk:** Write the remaining error list (or "None") to `[MASTER_REPO_PATH]/Retros/pipeline-remaining-<timestamp>.md`. Phase 6 reads this file -- do not rely on session context alone.
+**Note for Phase 6:** The re-audit appended a "Remaining Actionable Errors" section to `AUDIT_FILENAME`. Phase 6 reads remaining errors from there.
 
 **Decision tree after re-audit:**
 - If 0 actionable errors -> exit loop, proceed to Phase 6
@@ -182,14 +182,14 @@ List all artifacts created during this pipeline run:
 - Spec: `specs/applied/<filename>` (moved from `specs/` after planning)
 - Impl plan: `Implementation Plans/<filename>`
 - Working log: `Working Logs/<filename>`
-- Audit(s): `Retros/<filename>` (and any re-audit files)
+- Audit(s): `Working Logs/<filename>` (and any re-audit files)
 - Fixer log(s): `Working Logs/fixer-log--<filename>` (if fix loop ran)
 
 ### Report remaining issues
 If the fix loop ran and errors remain after 2 cycles:
-- Read the remaining errors from `[MASTER_REPO_PATH]/Retros/pipeline-remaining-<timestamp>.md`
+- Read `AUDIT_FILENAME` and parse the last "### Remaining Actionable Errors" section (from the most recent re-audit addendum). If the section says "None", treat as 0 remaining errors.
 - List each remaining error (title + brief description)
-- Say: "N errors remain after 2 fix cycles. Review the final audit at `Retros/<filename>` and fix manually or run `/fix <filename>` again."
+- Say: "N errors remain after 2 fix cycles. Review the final audit at `Working Logs/<filename>` and fix manually or run `/fix <filename>` again."
 
 ### Update learnings.md
 
@@ -303,6 +303,20 @@ File: `commands/[filename]`
 - If an observation matches an entry already in `promotion-log.md` (a previously applied fix), this is a regression: create a new entry at LOW with a note: "Previously applied on [date] -- see promotion-log.md. Recurrence suggests the fix was insufficient."
 - If the target file has changed so much a diff concept no longer applies, regenerate from scratch. If the problem appears fixed, note: "May be resolved -- verify before applying" but do NOT remove the entry.
 - If the pipeline ran inside a project other than PipelineIQ, include the project name or path in each **Seen in** entry (e.g., "2026-04-22 (spec--widgets, project: /path/to/other)") to distinguish cross-project observations.
+
+### Cleanup (success only)
+
+If remaining errors = 0 (all errors resolved or no errors were found):
+
+Delete the following artifacts from this pipeline run:
+- `[MASTER_REPO_PATH]/Working Logs/wlog--*` matching this run's description slug
+- `[MASTER_REPO_PATH]/Working Logs/audit-impl--*` matching this run's description slug
+- `[MASTER_REPO_PATH]/Working Logs/fixer-log--*` matching this run's description slug
+- `[MASTER_REPO_PATH]/Implementation Plans/impl--*` matching this run's description slug
+
+Match by description slug (the text portion of the timestamp-prefixed filename) to avoid deleting artifacts from concurrent runs.
+
+If remaining errors > 0: skip cleanup. Say: "Artifacts preserved for manual review -- run `/fix <audit-filename>` to address remaining errors."
 
 ### SKIP_MERGE branch:
 

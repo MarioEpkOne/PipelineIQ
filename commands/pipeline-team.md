@@ -226,7 +226,7 @@ All tasks are terminal when every task is `completed`, `failed`, `blocked-by-fai
 
 --- /pipeline-team: COMPLETE ---
 
-If `Retros/` does not exist, create it. Write `Retros/batch-summary--YYYY-MM-DD--HH-MM.md` with:
+Write `Working Logs/batch-summary--YYYY-MM-DD--HH-MM.md` with:
 - **Overview**: total/completed/failed/blocked/skipped counts
 - **Results table**: `| Spec | Status | Impl Plan | Working Log | Audit | Notes |` -- one row per spec
 - **Remaining Issues**: specs with unresolved audit errors
@@ -255,6 +255,20 @@ After writing the batch summary, update `learnings.md` using the same smart lear
 4. **Single batch = one occurrence per teammate per learning.** If the same teammate hits the same issue multiple times within their pipeline run, that counts as one occurrence from that teammate.
 
 Follow all constraints from pipeline.md's learnings section: diffs target `commands/` only, never delete entries, never invoke /learnings-review, err toward false separation.
+
+### Cleanup (success only)
+
+If all specs completed with 0 remaining errors:
+
+For each completed spec, delete its artifacts using the paths from PIPELINE_COMPLETE messages:
+- Working log (working_log path)
+- Audit doc (audit path)
+- Fixer logs matching the spec's description slug in `Working Logs/`
+- Implementation plan matching the spec's description slug in `Implementation Plans/`
+
+Also delete the batch summary file.
+
+If any spec has remaining errors: preserve ALL artifacts (not just the failed spec's). Say: "Artifacts preserved -- N spec(s) have unresolved errors."
 
 ---
 
@@ -298,7 +312,7 @@ Follow all constraints from pipeline.md's learnings section: diffs target `comma
 | Merge queue has multiple items while one is processing | Process sequentially; each merge broadcasts `MASTER_ADVANCED` |
 | All specs have no dependencies | All in wave 1; spawn up to 5; rest wait for slots |
 | Audit-only replacement teammate receives `MASTER_ADVANCED` | Rebase existing worktree at next checkpoint as normal |
-| `Retros/` directory does not exist | Create it before writing batch summary |
+| `Working Logs/` directory does not exist | Create it before writing batch summary |
 | Task lag after lead marks complete | Nudge idle teammate at 3 min; mark manually after second nudge; log "task lag detected" |
 | Repair fails + user replies 'skip [spec]' | Mark as skipped; unblock direct dependents; note in summary |
 | Repair fails + user replies 'abort' | Shut down active teammates (5-min wait each), write partial summary, exit |

@@ -38,7 +38,7 @@ If you already have a spec written, skip the interview:
 | `specs/` → `specs/applied/` | Spec file (moved to `applied/` after planning) |
 | `Implementation Plans/` | Step-by-step implementation plan |
 | `Working Logs/` | Execution log from the impl phase |
-| `Retros/` | Audit document with Actionable Errors |
+| `Working Logs/audit-impl--*` | Audit document with Actionable Errors |
 | `Working Logs/fixer-log--*` | Fix loop log (if the fix loop ran) |
 
 ### `/pipeline-team` — Parallel Multi-Spec Pipeline
@@ -64,7 +64,7 @@ This picks up all `.md` files in `specs/`. To run a subset:
 3. **Wave execution** — spawns up to 5 teammates in parallel, each running the full pipeline with `SKIP_MERGE` so they don't merge on their own
 4. **Merge queue** — the lead merges completed specs one at a time (rebase + fast-forward only), broadcasts to active teammates to rebase
 5. **Failure handling** — spawns a repair agent on failure, escalates to user if repair fails
-6. **Batch summary** — writes a results table to `Retros/batch-summary--*.md`
+6. **Batch summary** — writes a results table to `Working Logs/batch-summary--*.md`
 
 ### `/spec`, `/impl-plan`, `/impl`, `/audit-implementation`, `/fix`, `/spec-splitter`
 
@@ -75,7 +75,7 @@ Each phase of the pipeline is also available as a standalone command. Useful whe
 /impl-plan specs/my-feature.md     # plan from an existing spec
 /impl "Implementation Plans/..."   # execute a plan
 /audit-implementation              # audit the current worktree
-/fix Retros/audit--my-feature.md   # fix errors from an audit
+/fix Working Logs/audit-impl--my-feature.md   # fix errors from an audit
 /spec-splitter specs/big-feature.md # split a large spec into parallel children
 ```
 

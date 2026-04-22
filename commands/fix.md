@@ -6,12 +6,12 @@ The user's request is: $ARGUMENTS
 
 ## Phase 1 — Find Inputs
 
-Search `Retros/` for an audit document whose filename contains the argument (case-insensitive).
+Search `Working Logs/` for an audit document whose filename starts with `audit-impl--` and contains the argument (case-insensitive).
 
 - If multiple matches: list them and ask the user to pick one.
 - If no match and argument looks like a file path: try reading it directly.
 - If no match: tell the user no audit found and exit.
-- If no argument: use the most recently modified `.md` file in `Retros/`.
+- If no argument: use the most recently modified file in `Working Logs/` whose name starts with `audit-impl--`.
 
 Read the audit document in full.
 
@@ -72,7 +72,7 @@ Before writing the file, run `date '+%Y-%m-%d--%H-%M'` to get the actual current
 ```markdown
 # Fixer Log
 **Date**: YYYY-MM-DD
-**Audit**: Retros/<audit-filename>
+**Audit**: Working Logs/<audit-filename>
 **Impl plan**: Implementation Plans/<impl-plan-filename>
 
 ## Fixes Applied

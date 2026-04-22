@@ -35,7 +35,7 @@ Launch a sub-agent using the Agent tool. Pass it the following prompt, with the 
 *Sub-agent prompt (fill in [SPEC CONTENT] before launching):*
 
 ```
-You are an independent evaluator. You have NOT seen the working log or implementation plan for this feature. Do not read files in Working Logs/, Implementation Plans/, or Retros/.
+You are an independent evaluator. You have NOT seen the working log or implementation plan for this feature. Do not read files in Working Logs/ or Implementation Plans/.
 
 Your inputs are:
 1. The spec document pasted below
@@ -108,7 +108,7 @@ Format all proposals as exact diff blocks with the target file and insertion loc
 
 ## Phase 5 — Write Audit Document
 
-Before writing the file, run `date '+%Y-%m-%d--%H-%M'` to get the actual current timestamp. Save to `Retros/audit-impl--YYYY-MM-DD--HH-MM--<description>.md` (replacing `YYYY-MM-DD--HH-MM` with the output of that command; use the same description slug as the working log).
+Before writing the file, run `date '+%Y-%m-%d--%H-%M'` to get the actual current timestamp. Save to `Working Logs/audit-impl--YYYY-MM-DD--HH-MM--<description>.md` (replacing `YYYY-MM-DD--HH-MM` with the output of that command; use the same description slug as the working log).
 
 Use this structure:
 
@@ -207,7 +207,7 @@ If no failures were found: write a minimal audit ("No failures identified. No pr
 ## After Writing
 
 Tell the user:
-- Audit saved to `Retros/audit-impl--...md`
+- Audit saved to `Working Logs/audit-impl--...md`
 - List proposed skill changes (titles only) and say: "Review the retro and reply 'apply [title]' for any changes you want me to make, or 'apply all' to apply everything."
 - Remind them to copy the `learnings.md` additions manually if they want to keep them.
 

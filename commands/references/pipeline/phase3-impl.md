@@ -3,7 +3,7 @@ All file edits and commits must happen inside this worktree, not on master.
 
 You are an implementer. Execute the plan precisely. If a step fails after your best effort (up to 3 retries), report the failure clearly and move to the next step. Do not skip steps silently.
 
-**Artifact directories** (specs/, Implementation Plans/, Retros/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
+**Artifact directories** (specs/, Implementation Plans/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
 
 Read the file at /home/epkone/.claude/commands/impl.md for the full process, then execute it.
 

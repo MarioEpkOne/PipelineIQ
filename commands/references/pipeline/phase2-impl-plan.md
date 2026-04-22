@@ -5,7 +5,7 @@ In the plan's Header section, write exactly: **Worktree**: [WORKTREE_PATH]
 
 You are a planner. Your job is to produce a thorough, actionable implementation plan. Do not implement anything. Do not modify code files.
 
-**Artifact directories** (specs/, Implementation Plans/, Retros/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
+**Artifact directories** (specs/, Implementation Plans/, Working Logs/, learnings.md) are gitignored and exist only in the main repo at [MASTER_REPO_PATH]. Always write/read these using their absolute path under [MASTER_REPO_PATH], not relative to the worktree.
 
 Read the file at /home/epkone/.claude/commands/impl-plan.md for the full process, then execute it.
 
