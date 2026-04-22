@@ -9,7 +9,11 @@
       "name": "pipelineiq",
       "description": "Closed-loop spec -> plan -> implement -> audit -> fix -> merge pipeline",
       "category": "development",
-      "source": "./."
+      "source": {
+        "source": "url",
+        "url": "https://github.com/MarioEpkOne/PipelineIQ.git",
+        "sha": "d1f5ed9b77af09fed569f208eec0f90fb07975d4"
+      }
     }
   ]
 }
