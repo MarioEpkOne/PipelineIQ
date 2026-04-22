@@ -25,6 +25,19 @@ Runs the full lifecycle for one feature or change. The spec phase is interactive
 6. **Fix Loop** — if errors are found, a fix → re-audit cycle runs automatically (max 2 rounds)
 7. **Summary** — lists artifacts, updates `learnings.md`, merges the worktree to master
 
+**Model routing** — each subagent phase uses the model best suited to the task:
+
+| Phase | Model | Why |
+|---|---|---|
+| Spec | *(inline)* | Interactive — runs in your current session |
+| Impl-Plan | Opus | Architecture decisions need deep reasoning |
+| Impl | Sonnet | Mechanical execution of a well-specified plan |
+| Audit | Opus | Independent judgment and architectural review |
+| Fix | Sonnet | Targeted fixes against a specific error list |
+| Re-audit | Sonnet | Verification of fix results against prior audit |
+
+`/pipeline-team` spawns each teammate on Sonnet; the teammate then runs the full pipeline with the per-phase routing above.
+
 If you already have a spec written, skip the interview:
 
 ```
