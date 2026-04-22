@@ -93,7 +93,7 @@ The reviewer reads each entry, verifies the suggested diff still applies against
 
 1. Add the PipelineIQ marketplace:
    ```
-   /plugin marketplace add Epkone/PipelineIQ
+   /plugin marketplace add MarioEpkOne/PipelineIQ
    ```
 
 2. Install the plugin:
@@ -101,11 +101,21 @@ The reviewer reads each entry, verifies the suggested diff still applies against
    /plugin install pipelineiq@pipelineiq-marketplace
    ```
 
-3. Verify installation -- the following commands should be available:
+3. Verify installation — the following commands should be available:
    `/pipeline`, `/pipeline-team`, `/spec`, `/impl-plan`, `/impl`,
    `/audit-implementation`, `/fix`, `/spec-splitter`
 
-The `references/` subdirectory contains subagent prompt templates used by `pipeline` and `pipeline-team`. Both commands validate these files at startup and will stop with a clear error if any are missing.
+### Manual Install (Alternative)
+
+```bash
+# Global install (available in all projects)
+cp -r commands/ ~/.claude/commands/
+
+# Or per-repo install
+cp -r commands/ <your-repo>/.claude/commands/
+```
+
+The `references/` subdirectory (including `references/pipeline/` and `references/pipeline-team/`) must be present. Both `pipeline` and `pipeline-team` validate these files at startup and will stop with a clear error if any are missing.
 
 ## Requirements
 

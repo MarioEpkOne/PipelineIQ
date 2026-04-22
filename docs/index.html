@@ -466,9 +466,22 @@
     <div class="section-label">Getting Started</div>
     <div class="section-title">Installation</div>
     <p class="section-desc">
-      Copy the <code class="inline">commands/</code> directory (including the <code class="inline">references/</code> subdirectories)
-      to one of the supported locations. The pipeline validates that all reference files are present at startup.
+      Install via the Claude Code plugin system (recommended) or manually copy the command files.
+      The pipeline validates that all reference files are present at startup.
     </p>
+
+    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:12px;">Via Claude Code Plugin (Recommended)</h3>
+    <div class="install-block"><span class="comment"># Step 1: Add the PipelineIQ marketplace</span>
+<span class="cmd">/plugin marketplace add MarioEpkOne/PipelineIQ</span>
+
+<span class="comment"># Step 2: Install the plugin</span>
+<span class="cmd">/plugin install pipelineiq@pipelineiq-marketplace</span>
+
+<span class="comment"># Step 3: Verify — these commands should be available:</span>
+<span class="comment">#   /pipeline, /pipeline-team, /spec, /impl-plan, /impl,</span>
+<span class="comment">#   /audit-implementation, /fix, /spec-splitter</span></div>
+
+    <h3 style="font-size:1.1rem;font-weight:700;margin-top:28px;margin-bottom:12px;">Manual Install (Alternative)</h3>
     <div class="install-block"><span class="comment"># Option 1: Global install (available in all projects)</span>
 <span class="cmd">cp -r commands/ ~/.claude/commands/</span>
 
