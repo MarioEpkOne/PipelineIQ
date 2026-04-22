@@ -83,7 +83,7 @@ Print: "Display mode: in-process (Shift+Down to cycle teammates). Split-pane req
 
 For each spec file `S`:
 1. Extract the title (first `# ` heading) and the **Goal** + **Current State** body text.
-2. For every other spec `T`, extract `T`'s title keywords (words > 4 chars, lowercase, excluding common stopwords like "with", "that", "this", "from", "into", "using", "their").
+2. For every other spec `T`, extract `T`'s title keywords (words > 4 chars, lowercase, excluding common stopwords like "with", "that", "this", "from", "into", "using", "their"). **[CONTRACT: keyword-stopwords]** This stopword list and threshold are shared with spec-splitter.md's keyword wiring verification — changing one without the other breaks dependency detection.
 3. If 2 or more of `T`'s title keywords appear in `S`'s Goal or Current State text -> `S` depends on `T`.
 4. Ignore self-edges. If a spec's title has no keywords > 4 chars, it contributes no dependency edges.
 5. Also check `specs/applied/` -- if a dependency is already implemented there, treat it as satisfied (no pending task needed for it; its dependents are immediately unblocked).

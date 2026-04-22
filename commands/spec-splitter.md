@@ -23,7 +23,16 @@ After reading the spec, check for a `**Split from**:` line. If found, store the 
 
 ### Read and extract
 
-Read the spec file in full. Extract these components:
+Read the spec file in full. Before extracting, scan for the expected section headings (`## Goal`, `## Decisions`, `## Technical Design`, `## Edge Cases`, `## Constraints`, `## Current State`, `## Open Questions`). Report which were found and which are missing:
+
+```
+Sections found: Goal, Decisions, Technical Design, Edge Cases, Constraints, Current State
+Sections missing: Open Questions (optional -- OK to proceed)
+```
+
+If a missing section has a near-match (e.g., `## Design` instead of `## Technical Design`, or `## Edge Cases & Error Handling` instead of `## Edge Cases`), flag it: "Found '## Design' -- did you mean '## Technical Design'? Treating as Technical Design." Use the near-match as the intended section.
+
+Extract these components:
 
 1. **Title** -- first `# ` heading
 2. **Goal** -- full text of Goal section
@@ -115,7 +124,7 @@ If the spec should be split, group the content into child specs:
 3. **Assign edge cases** -- each edge case goes to the child spec whose Technical Design subsection it references. Cross-cutting edge cases go to every child they touch (duplicated, with a note: "Also applies to: [sibling spec name]").
 4. **Assign constraints** -- project-wide constraints go into every child. Constraints specific to one area go only to that child.
 5. **Duplicate shared decisions** -- decisions that apply to multiple children are copied in full (including rationale) into every relevant child. No cross-references to parent or siblings.
-6. **Wire dependencies** -- determine which child specs depend on which others. For each dependency edge, intentionally embed 2+ title keywords (> 4 chars) from the dependency's title into the dependent's Goal or Current State text. This ensures pipeline-team's keyword-matching algorithm detects the edge.
+6. **Wire dependencies** -- determine which child specs depend on which others. For each dependency edge, intentionally embed 2+ title keywords (> 4 chars) from the dependency's title into the dependent's Goal or Current State text. This ensures pipeline-team's keyword-matching algorithm detects the edge. **[CONTRACT: keyword-stopwords]** Stopword list and threshold must match pipeline-team.md Phase 1 exactly.
 7. **Maximize parallelism** -- if two possible groupings produce similar child sizes but different wave structures, prefer the one with more specs in Wave 1 (no dependencies).
 8. **Handle shared files** -- if two Technical Design subsections both modify the same file, that file is a coupling point. Assign it to the child that modifies it most heavily. Other children list it as a read-only dependency in their Current State (which triggers a dependency edge via keyword wiring). If the file is modified equally by multiple subsections, it becomes part of the foundation spec.
 
@@ -124,7 +133,7 @@ If the spec should be split, group the content into child specs:
 Before presenting, run pipeline-team's dependency detection algorithm against the proposed child titles and Goal/Current State text:
 
 For each pair of children (A, B):
-1. Extract B's title keywords (words > 4 chars, lowercase, excluding stopwords: "with", "that", "this", "from", "into", "using", "their").
+1. Extract B's title keywords (words > 4 chars, lowercase, excluding stopwords: "with", "that", "this", "from", "into", "using", "their"). **[CONTRACT: keyword-stopwords]**
 2. Check if 2+ of B's keywords appear in A's Goal or Current State text.
 3. If yes -> A depends on B.
 
@@ -212,6 +221,8 @@ This is the only phase that writes files. All prior phases are read-only.
 Extract from the parent spec filename:
 - `{PARENT_DATE}` = the timestamp portion (e.g., `2026-04-22--01-54`)
 - `{PARENT_SLUG}` = the description slug (e.g., `spec-splitter-command`)
+
+**Fallback:** If the parent filename does not match the expected `spec--{DATE}--{SLUG}.md` pattern (e.g., a hand-written `my-feature.md`), use the current timestamp for `{PARENT_DATE}` and derive `{PARENT_SLUG}` from the spec title (kebab-case, lowercase, max 50 chars).
 
 Child filenames: `spec--{PARENT_DATE}--{PARENT_SLUG}--{NN}-{child-slug}.md`
 - `{NN}` = two-digit sequence (01, 02, 03...)
