@@ -66,7 +66,7 @@ This picks up all `.md` files in `specs/`. To run a subset:
 5. **Failure handling** — spawns a repair agent on failure, escalates to user if repair fails
 6. **Batch summary** — writes a results table to `Retros/batch-summary--*.md`
 
-### `/spec`, `/impl-plan`, `/impl`, `/audit-implementation`, `/fix`
+### `/spec`, `/impl-plan`, `/impl`, `/audit-implementation`, `/fix`, `/spec-splitter`
 
 Each phase of the pipeline is also available as a standalone command. Useful when you want to run or re-run a single phase:
 
@@ -76,13 +76,16 @@ Each phase of the pipeline is also available as a standalone command. Useful whe
 /impl "Implementation Plans/..."   # execute a plan
 /audit-implementation              # audit the current worktree
 /fix Retros/audit--my-feature.md   # fix errors from an audit
+/spec-splitter specs/big-feature.md # split a large spec into parallel children
 ```
 
 ## Learnings
 
-Each pipeline run reflects on what went well and what didn't, appending actionable observations to `learnings.md` at the project root. These are process improvements (not code patterns) — things like "the plan prescribed content that exceeded its own line-count target."
+Each pipeline run reflects on what went well and what didn't, appending actionable observations to `learnings.md` at the project root. These are process improvements (not code patterns) — things like "impl-plan should check CLAUDE.md for stale references when changing defaults." Each entry records a severity tier (HIGH / MEDIUM / LOW based on occurrence count), what happened, and a suggested diff to the relevant command file.
 
-Learnings accumulate across runs. Use `/learnings-review` to review them and decide which to apply.
+Learnings accumulate across runs. Use `/learnings-review` to triage them:
+
+The reviewer reads each entry, verifies the suggested diff still applies against the current codebase, and presents a severity-grouped verdict table. HIGH-severity items (4+ occurrences) are recommended for immediate application. For each approved item the reviewer patches the command file, removes the entry from `learnings.md`, and archives it to `promotion-log.md` with the exact diff applied. This is the only process that modifies or deletes existing `learnings.md` entries.
 
 ## Install
 
