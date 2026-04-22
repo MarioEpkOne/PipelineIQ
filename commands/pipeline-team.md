@@ -1,12 +1,13 @@
 Orchestrates the full implementation pipeline (impl-plan -> impl -> audit -> fix -> merge) across **multiple pre-written specs simultaneously** using Claude Code's agent teams feature. Specs run in parallel where dependencies allow; merges are serialized through the lead to preserve the worktree invariant. Replaces the pattern of manually running `/pipeline` N times in sequence.
 
-Invocation: `/pipeline-team [optional-filter]`
-- No filter -> all `.md` files in `specs/` (not `specs/applied/`)
-- With filter -> only files whose names contain the filter string (case-insensitive)
+Invocation: `/pipeline-team [path-or-filter]`
+- No argument -> scans `specs/team/`
+- Argument with `/` -> treated as directory path to scan
+- Argument without `/` -> treated as filename filter in `specs/team/`
 
 **Requires**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in env or settings.json, Claude Code >= 2.1.32.
 
-**Specs must be pre-written** -- the interactive spec interview does not compose with parallelism. All specs must exist in `specs/` before invoking.
+**Specs must be pre-written** -- the interactive spec interview does not compose with parallelism. Split large specs with `/spec-splitter` first, then run this command.
 
 The argument (if any) is: $ARGUMENTS
 
@@ -47,11 +48,18 @@ Run `git worktree list`. If any non-main worktrees exist:
 
 **Check 5 -- Discover specs**
 
-List all `.md` files in `specs/` (not `specs/applied/`). Apply the filter argument if provided (case-insensitive filename match).
+Parse the argument to determine the scan directory and optional filter:
+
+1. If no argument: scan `specs/team/`.
+2. If argument contains `/` or ends with `/`: treat the argument as a directory path. Scan that directory.
+3. Otherwise: treat the argument as a filename filter. Scan `specs/team/` and apply the filter (case-insensitive filename match).
+
+In all cases, never scan `specs/applied/` or `specs/split/`. List all `.md` files in the resolved directory (non-recursive -- do not descend into subdirectories).
 
 If 0 files found:
-- With filter -> STOP: "No specs found in `specs/` matching filter '$ARGUMENTS'."
-- Without filter -> STOP: "No specs found in `specs/`. Add spec files there and rerun."
+- With filter -> STOP: "No specs found in `specs/team/` matching filter '$ARGUMENTS'."
+- With explicit directory -> STOP: "No specs found in `$DIR`."
+- Without argument -> STOP: "No specs found in `specs/team/`. Split a spec with `/spec-splitter` or add spec files there and rerun."
 
 Print: "Found N spec(s): [list filenames]"
 
