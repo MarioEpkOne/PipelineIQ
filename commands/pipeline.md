@@ -304,20 +304,6 @@ File: `commands/[filename]`
 - If the target file has changed so much a diff concept no longer applies, regenerate from scratch. If the problem appears fixed, note: "May be resolved -- verify before applying" but do NOT remove the entry.
 - If the pipeline ran inside a project other than PipelineIQ, include the project name or path in each **Seen in** entry (e.g., "2026-04-22 (spec--widgets, project: /path/to/other)") to distinguish cross-project observations.
 
-### Cleanup (success only)
-
-If remaining errors = 0 (all errors resolved or no errors were found):
-
-Delete the following artifacts from this pipeline run:
-- `[MASTER_REPO_PATH]/Working Logs/wlog--*` matching this run's description slug
-- `[MASTER_REPO_PATH]/Working Logs/audit-impl--*` matching this run's description slug
-- `[MASTER_REPO_PATH]/Working Logs/fixer-log--*` matching this run's description slug
-- `[MASTER_REPO_PATH]/Implementation Plans/impl--*` matching this run's description slug
-
-Match by description slug (the text portion of the timestamp-prefixed filename) to avoid deleting artifacts from concurrent runs.
-
-If remaining errors > 0: skip cleanup. Say: "Artifacts preserved for manual review -- run `/fix <audit-filename>` to address remaining errors."
-
 ### SKIP_MERGE branch:
 
 **If SKIP_MERGE = true:**
@@ -337,3 +323,17 @@ If remaining errors > 0: skip cleanup. Say: "Artifacts preserved for manual revi
     - "Review proposed skill changes in the audit -- reply 'apply [title]' or 'apply all'"
     - "Run `/learnings-review` to review and apply accumulated pipeline improvement suggestions"
     - Any other context-specific suggestions
+
+### Cleanup (success only)
+
+If remaining errors = 0 (all errors resolved or no errors were found):
+
+Delete the following artifacts from this pipeline run:
+- `[MASTER_REPO_PATH]/Working Logs/wlog--*` matching this run's description slug
+- `[MASTER_REPO_PATH]/Working Logs/audit-impl--*` matching this run's description slug
+- `[MASTER_REPO_PATH]/Working Logs/fixer-log--*` matching this run's description slug
+- `[MASTER_REPO_PATH]/Implementation Plans/impl--*` matching this run's description slug
+
+Match by description slug (the text portion of the timestamp-prefixed filename) to avoid deleting artifacts from concurrent runs.
+
+If remaining errors > 0: skip cleanup. Say: "Artifacts preserved for manual review -- run `/fix <audit-filename>` to address remaining errors."
