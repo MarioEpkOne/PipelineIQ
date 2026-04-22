@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PipelineIQ Documentation</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181b24;
+    --surface-alt: #1e2230;
+    --border: #2a2f3e;
+    --accent: #6c8cff;
+    --accent-dim: #4a6ad8;
+    --accent-glow: rgba(108,140,255,.12);
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 0;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    padding: 72px 24px 56px;
+    text-align: center;
+    background: linear-gradient(170deg, #151825 0%, #0f1117 60%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: 50%; transform: translateX(-50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(108,140,255,.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .hero .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    max-width: 660px;
+    margin: 0 auto 28px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  /* ---- Container ---- */
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---- TOC ---- */
+  .toc {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px 0;
+  }
+  .toc-title {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .toc-grid a {
+    display: block;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: .88rem;
+    transition: border-color .2s, color .2s;
+  }
+  .toc-grid a:hover {
+    border-color: var(--accent-dim);
+    color: var(--text);
+  }
+
+  /* ---- Section ---- */
+  section { padding: 56px 0; }
+  section + section { border-top: 1px solid var(--border); }
+  .section-label {
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .section-desc {
+    color: var(--text-dim);
+    max-width: 680px;
+    margin-bottom: 36px;
+    font-size: 1.02rem;
+  }
+
+  /* ---- Pipeline Flow ---- */
+  .pipeline-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .phase-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    margin-left: 48px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .phase-card:hover {
+    border-color: var(--accent-dim);
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+  .phase-connector {
+    position: relative;
+    margin-left: 48px;
+    height: 36px;
+  }
+  .phase-connector::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--accent-dim), var(--border));
+  }
+  .phase-connector::after {
+    content: '';
+    position: absolute;
+    left: 22px; bottom: 0;
+    width: 14px; height: 14px;
+    border: 2px solid var(--accent-dim);
+    border-radius: 50%;
+    background: var(--bg);
+  }
+  .phase-num {
+    position: absolute;
+    left: -48px; top: 28px;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem;
+    font-weight: 700;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(108,140,255,.3);
+    z-index: 1;
+  }
+  .phase-title {
+    font-size: 1.18rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .phase-title .slash-cmd {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: .82rem;
+    padding: 2px 10px;
+    border-radius: 6px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    border: 1px solid rgba(108,140,255,.25);
+  }
+  .phase-body { color: var(--text-dim); font-size: .95rem; }
+  .phase-body p { margin-bottom: 8px; }
+
+  .artifact-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 12px;
+    border-radius: 6px;
+    font-size: .78rem;
+    font-weight: 600;
+    margin: 3px 2px;
+    background: rgba(74,222,128,.08);
+    color: var(--green);
+    border: 1px solid rgba(74,222,128,.18);
+  }
+  .artifact-tag.consumed {
+    background: rgba(251,191,36,.08);
+    color: var(--amber);
+    border-color: rgba(251,191,36,.18);
+  }
+  .artifact-label { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 10px; margin-bottom: 4px; }
+
+  /* ---- Loop badge ---- */
+  .loop-indicator {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .4px;
+    background: rgba(248,113,113,.1);
+    color: var(--red);
+    border: 1px solid rgba(248,113,113,.2);
+    margin-left: 8px;
+  }
+
+  /* ---- Grids ---- */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  @media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--accent-dim); }
+  .card h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .dot.green { background: var(--green); }
+  .dot.amber { background: var(--amber); }
+  .dot.blue { background: var(--accent); }
+  .dot.red { background: var(--red); }
+  .card p { color: var(--text-dim); font-size: .88rem; }
+  .card code, code.inline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--surface-alt);
+    color: var(--text);
+  }
+  .card-center { text-align: center; }
+  .card-center h4 { justify-content: center; }
+
+  .feature-icon {
+    width: 48px; height: 48px;
+    margin: 0 auto 14px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    font-size: 1.4rem;
+    background: var(--accent-glow);
+  }
+
+  /* ---- Command reference ---- */
+  .cmd-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+  }
+  .cmd-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+  .cmd-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-dim);
+    vertical-align: top;
+  }
+  .cmd-table tr:last-child td { border-bottom: none; }
+  .cmd-table td:first-child {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: .85rem;
+    white-space: nowrap;
+  }
+
+  /* ---- Diagram ---- */
+  .diagram-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+    line-height: 1.8;
+    color: var(--text-dim);
+    white-space: pre;
+  }
+  .diagram-box .hl { color: var(--accent); font-weight: 700; }
+  .diagram-box .gn { color: var(--green); }
+  .diagram-box .am { color: var(--amber); }
+  .diagram-box .rd { color: var(--red); }
+
+  /* ---- Install block ---- */
+  .install-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .85rem;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.9;
+  }
+  .install-block .comment { color: var(--text-muted); }
+  .install-block .cmd { color: var(--green); }
+
+  /* ---- Callout ---- */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 20px 24px;
+  }
+  .callout h4 { font-size: .95rem; margin-bottom: 6px; }
+  .callout p { color: var(--text-dim); font-size: .9rem; }
+
+  /* ---- Footer ---- */
+  footer {
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: .82rem;
+    border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* ---- Utility ---- */
+  .mt-sm { margin-top: 12px; }
+  .mt-md { margin-top: 24px; }
+  .mt-lg { margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<!-- ======================== HERO ======================== -->
+<div class="hero">
+  <span class="badge">Documentation</span>
+  <h1 style="margin-top:20px;">PipelineIQ</h1>
+  <p class="subtitle">
+    A closed-loop development pipeline built as Claude Code slash commands.
+    Spec &rarr; Plan &rarr; Implement &rarr; Audit &rarr; Fix &rarr; Merge &mdash; fully orchestrated, with artifact traceability at every phase.
+  </p>
+</div>
+
+<!-- ======================== TOC ======================== -->
+<nav class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-grid">
+    <a href="#overview">Overview</a>
+    <a href="#installation">Installation</a>
+    <a href="#commands">Command Reference</a>
+    <a href="#pipeline">Pipeline Phases</a>
+    <a href="#artifacts">Artifacts</a>
+    <a href="#batch">Batch Execution</a>
+    <a href="#architecture">Architecture</a>
+    <a href="#traceability">Traceability</a>
+  </div>
+</nav>
+
+<!-- ======================== OVERVIEW ======================== -->
+<section id="overview">
+  <div class="container">
+    <div class="section-label">Overview</div>
+    <div class="section-title">What PipelineIQ Does</div>
+    <p class="section-desc">
+      PipelineIQ is a collection of <strong>Claude Code slash commands</strong> (markdown prompt files) that automate the
+      full development lifecycle. A natural-language description of a feature is taken through structured planning,
+      code generation in an isolated git worktree, independent auditing against the original spec, automated error
+      correction, and a clean fast-forward merge &mdash; producing timestamped artifacts at each step.
+    </p>
+    <p class="section-desc" style="margin-top:-20px;">
+      There is no build step, no runtime, and no dependencies. The deliverables are markdown files in <code class="inline">commands/</code>
+      that Claude Code executes as slash commands.
+    </p>
+
+    <div class="grid-3">
+      <div class="card card-center">
+        <div class="feature-icon">&#9881;</div>
+        <h4>End-to-End Automation</h4>
+        <p>From English description to merged code. Each phase is a specialized subagent with a focused scope and isolated context.</p>
+      </div>
+      <div class="card card-center">
+        <div class="feature-icon">&#128269;</div>
+        <h4>Independent Auditing</h4>
+        <p>A separate agent &mdash; with no knowledge of the plan &mdash; verifies the implementation against the original spec.</p>
+      </div>
+      <div class="card card-center">
+        <div class="feature-icon">&#9878;</div>
+        <h4>Self-Correcting</h4>
+        <p>Audit errors feed into an automated fix loop (up to 2 cycles). Process friction is logged for continuous improvement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== INSTALLATION ======================== -->
+<section id="installation">
+  <div class="container">
+    <div class="section-label">Getting Started</div>
+    <div class="section-title">Installation</div>
+    <p class="section-desc">
+      Copy the <code class="inline">commands/</code> directory (including the <code class="inline">references/</code> subdirectories)
+      to one of the supported locations. The pipeline validates that all reference files are present at startup.
+    </p>
+    <div class="install-block"><span class="comment"># Option 1: Global install (available in all projects)</span>
+<span class="cmd">cp -r commands/ ~/.claude/commands/</span>
+
+<span class="comment"># Option 2: Per-repo install</span>
+<span class="cmd">cp -r commands/ &lt;your-repo&gt;/.claude/commands/</span>
+
+<span class="comment"># Verify: both reference subdirectories must be present</span>
+<span class="cmd">ls ~/.claude/commands/references/pipeline/</span>      <span class="comment"># 6 phase files</span>
+<span class="cmd">ls ~/.claude/commands/references/pipeline-team/</span> <span class="comment"># 2 files</span></div>
+
+    <div class="callout mt-md">
+      <h4>Directory Structure</h4>
+      <p>
+        Artifact directories (<code class="inline">specs/</code>, <code class="inline">Implementation Plans/</code>,
+        <code class="inline">Working Logs/</code>) are created automatically in the <strong>main repo root</strong>, never inside worktrees.
+        All artifacts are gitignored.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== COMMANDS ======================== -->
+<section id="commands">
+  <div class="container">
+    <div class="section-label">Reference</div>
+    <div class="section-title">Command Reference</div>
+    <p class="section-desc">
+      Each command can be invoked standalone or is called internally by the pipeline orchestrator.
+    </p>
+    <div style="overflow-x:auto;">
+      <table class="cmd-table">
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Purpose</th>
+            <th>Input</th>
+            <th>Output</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>/pipeline</td>
+            <td>Run the full 6-phase pipeline for a single feature</td>
+            <td>Description or spec path</td>
+            <td>Merged code + all artifacts</td>
+          </tr>
+          <tr>
+            <td>/pipeline-team</td>
+            <td>Run multiple specs in parallel with dependency-aware scheduling</td>
+            <td>Pre-written specs in <code class="inline">specs/team/</code></td>
+            <td>Batch summary + per-spec artifacts</td>
+          </tr>
+          <tr>
+            <td>/spec</td>
+            <td>Interactive spec generation via structured interview</td>
+            <td>Feature description</td>
+            <td><code class="inline">specs/spec--*.md</code></td>
+          </tr>
+          <tr>
+            <td>/impl-plan</td>
+            <td>Create a step-by-step implementation plan + worktree</td>
+            <td>Spec file</td>
+            <td><code class="inline">Implementation Plans/impl--*.md</code></td>
+          </tr>
+          <tr>
+            <td>/impl</td>
+            <td>Execute a plan: write code, run tests, log results</td>
+            <td>Implementation plan</td>
+            <td><code class="inline">Working Logs/wlog--*.md</code></td>
+          </tr>
+          <tr>
+            <td>/audit-implementation</td>
+            <td>Independent verification of implementation vs. spec</td>
+            <td>Working log</td>
+            <td><code class="inline">Working Logs/audit-impl--*.md</code></td>
+          </tr>
+          <tr>
+            <td>/fix</td>
+            <td>Address actionable errors found by the auditor</td>
+            <td>Audit report</td>
+            <td><code class="inline">Working Logs/fixer-log--*.md</code></td>
+          </tr>
+          <tr>
+            <td>/spec-splitter</td>
+            <td>Decompose a large spec into parallelizable child specs</td>
+            <td>Spec file</td>
+            <td>N child specs in <code class="inline">specs/team/</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== PIPELINE PHASES ======================== -->
+<section id="pipeline">
+  <div class="container">
+    <div class="section-label">Pipeline</div>
+    <div class="section-title">Phase-by-Phase Execution</div>
+    <p class="section-desc">
+      <code class="inline">/pipeline "add feature X"</code> orchestrates all six phases.
+      Each phase runs as a subagent with its own reference prompt template, and produces a timestamped artifact that feeds the next phase.
+    </p>
+
+    <div class="pipeline-flow">
+
+      <!-- Phase 1 -->
+      <div class="phase-card">
+        <div class="phase-num">1</div>
+        <div class="phase-title">Spec Generation <span class="slash-cmd">/spec</span></div>
+        <div class="phase-body">
+          <p>Runs an interactive interview covering goals, trade-offs, edge cases, constraints, and testing strategy.
+             Produces a structured specification document. Can also accept an existing spec file to skip this phase.</p>
+          <div class="artifact-label">Produces</div>
+          <span class="artifact-tag">spec--*.md</span>
+        </div>
+      </div>
+
+      <div class="phase-connector"></div>
+
+      <!-- Phase 2 -->
+      <div class="phase-card">
+        <div class="phase-num">2</div>
+        <div class="phase-title">Implementation Planning <span class="slash-cmd">/impl-plan</span></div>
+        <div class="phase-body">
+          <p>A planning agent reads the spec and the current codebase, then writes a self-contained implementation plan:
+             files to touch, code for each change, verification checklist, and a draft commit message.
+             Creates a <strong>git worktree</strong> on a dedicated branch for isolated work.</p>
+          <div class="artifact-label">Consumes</div>
+          <span class="artifact-tag consumed">spec--*.md</span>
+          <div class="artifact-label">Produces</div>
+          <span class="artifact-tag">impl--*.md</span>
+          <span class="artifact-tag">git worktree</span>
+        </div>
+      </div>
+
+      <div class="phase-connector"></div>
+
+      <!-- Phase 3 -->
+      <div class="phase-card">
+        <div class="phase-num">3</div>
+        <div class="phase-title">Implementation <span class="slash-cmd">/impl</span></div>
+        <div class="phase-body">
+          <p>Follows the plan step-by-step inside the worktree: writes code, runs build/lint/test after each step,
+             and retries failures (up to 3 attempts per step). Every change, error, and deviation is logged.</p>
+          <div class="artifact-label">Consumes</div>
+          <span class="artifact-tag consumed">impl--*.md</span>
+          <div class="artifact-label">Produces</div>
+          <span class="artifact-tag">wlog--*.md</span>
+          <span class="artifact-tag">committed code</span>
+        </div>
+      </div>
+
+      <div class="phase-connector"></div>
+
+      <!-- Phase 4 -->
+      <div class="phase-card">
+        <div class="phase-num">4</div>
+        <div class="phase-title">Audit <span class="slash-cmd">/audit-implementation</span></div>
+        <div class="phase-body">
+          <p>A <strong>fresh, independent agent</strong> that has never seen the plan or working log reads the original spec
+             and inspects the codebase directly. Verifies each goal, categorizes failures
+             (spec drift, incomplete tasks, build/test failures, rule violations), and produces a numbered list of
+             actionable errors for the fix phase.</p>
+          <div class="artifact-label">Consumes</div>
+          <span class="artifact-tag consumed">spec--*.md</span>
+          <span class="artifact-tag consumed">wlog--*.md</span>
+          <div class="artifact-label">Produces</div>
+          <span class="artifact-tag">audit-impl--*.md</span>
+        </div>
+      </div>
+
+      <div class="phase-connector"></div>
+
+      <!-- Phase 5 -->
+      <div class="phase-card">
+        <div class="phase-num">5</div>
+        <div class="phase-title">Fix Loop <span class="slash-cmd">/fix</span> <span class="loop-indicator">max 2 cycles</span></div>
+        <div class="phase-body">
+          <p>If the audit found actionable errors, a fix agent parses the error list, applies targeted fixes, and re-runs tests.
+             A re-audit then verifies the fixes. This loop runs up to 2 cycles; decreasing error counts indicate progress.
+             Errors requiring human judgment are flagged and skipped.</p>
+          <div class="artifact-label">Consumes</div>
+          <span class="artifact-tag consumed">audit-impl--*.md</span>
+          <div class="artifact-label">Produces</div>
+          <span class="artifact-tag">fixer-log--*.md</span>
+        </div>
+      </div>
+
+      <div class="phase-connector"></div>
+
+      <!-- Phase 6 -->
+      <div class="phase-card">
+        <div class="phase-num">6</div>
+        <div class="phase-title">Merge &amp; Summary</div>
+        <div class="phase-body">
+          <p>The worktree is rebased onto main and merged with <code class="inline">--ff-only</code> (guaranteeing linear history).
+             A summary of all artifacts and remaining errors is produced. Process observations are appended to
+             <code class="inline">learnings.md</code> &mdash; a continuously growing record of pipeline friction and suggested improvements.
+             The worktree and its branch are then cleaned up.</p>
+          <div class="artifact-label">Produces</div>
+          <span class="artifact-tag">merged code on main</span>
+          <span class="artifact-tag">learnings.md entry</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======================== ARTIFACTS ======================== -->
+<section id="artifacts">
+  <div class="container">
+    <div class="section-label">Artifacts</div>
+    <div class="section-title">Output Files &amp; Directories</div>
+    <p class="section-desc">
+      All artifacts are timestamped markdown files stored in the main repo root (never inside worktrees).
+      Each artifact references its predecessors, forming a traceable chain from requirement to merged code.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4><span class="dot green"></span> Specification</h4>
+        <p>
+          <code>specs/spec--*.md</code><br>
+          Structured requirements: Goal, Decisions, Technical Design, Edge Cases, Constraints, Testing Strategy.
+          Moves to <code>specs/applied/</code> once planning begins.
+        </p>
+      </div>
+      <div class="card">
+        <h4><span class="dot blue"></span> Implementation Plan</h4>
+        <p>
+          <code>Implementation Plans/impl--*.md</code><br>
+          Step-by-step build instructions: files to touch, code to write, verification checklist, draft commit message.
+          Self-contained &mdash; the implementer agent needs nothing else.
+        </p>
+      </div>
+      <div class="card">
+        <h4><span class="dot amber"></span> Working Log</h4>
+        <p>
+          <code>Working Logs/wlog--*.md</code><br>
+          Execution record: every file change, error encountered (with retry counts), deviation from plan, and verification results.
+        </p>
+      </div>
+      <div class="card">
+        <h4><span class="dot red"></span> Audit Report</h4>
+        <p>
+          <code>Working Logs/audit-impl--*.md</code><br>
+          Independent verdict on spec compliance. Contains categorized failures, actionable errors with suggested fixes,
+          and proposed process improvements.
+        </p>
+      </div>
+      <div class="card">
+        <h4><span class="dot amber"></span> Fixer Log</h4>
+        <p>
+          <code>Working Logs/fixer-log--*.md</code><br>
+          Records which audit errors were fixed, which were skipped (not actionable or requiring human judgment), and which failed.
+        </p>
+      </div>
+      <div class="card">
+        <h4><span class="dot green"></span> Learnings</h4>
+        <p>
+          <code>learnings.md</code><br>
+          Append-only process knowledge base. Tracks pipeline friction with severity tiers, occurrence counts, and
+          concrete improvement suggestions (including diffs).
+        </p>
+      </div>
+    </div>
+
+    <div class="callout mt-md">
+      <h4>Spec Lifecycle</h4>
+      <p>
+        <code class="inline">specs/</code> is the inbox.
+        <code class="inline">specs/applied/</code> is the archive (spec has been planned or split).
+        <code class="inline">specs/team/</code> is the batch staging area (ready for <code class="inline">/pipeline-team</code>).
+        A spec moves to <code class="inline">applied/</code> only after planning begins or after <code class="inline">/spec-splitter</code> generates child specs from it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== BATCH MODE ======================== -->
+<section id="batch">
+  <div class="container">
+    <div class="section-label">Parallel Execution</div>
+    <div class="section-title">Batch Mode with /pipeline-team</div>
+    <p class="section-desc">
+      For multi-spec efforts, <code class="inline">/pipeline-team</code> orchestrates up to 5 concurrent pipelines
+      with automatic dependency detection, sequential merge ordering, and failure recovery.
+    </p>
+
+    <div class="diagram-box"><span class="hl">  /pipeline-team</span>
+
+  <span class="am">Pre-flight</span>        Validate environment, discover specs in specs/team/
+       |
+  <span class="am">Dependency</span>        Extract keywords from spec titles, build dependency graph
+  <span class="am">Analysis</span>          Detect cycles, propose execution waves, wait for confirmation
+       |
+  <span class="gn">Wave Execution</span>    Spawn up to 5 parallel pipelines (each runs /pipeline SKIP_MERGE)
+       |               Each teammate works in its own git worktree
+       |               Reports PIPELINE_COMPLETE or PIPELINE_FAILURE on finish
+       |
+  <span class="hl">Merge Queue</span>       Process completed work sequentially:
+       |                 rebase onto main &rarr; merge --ff-only &rarr; cleanup worktree
+       |               Broadcast MASTER_ADVANCED to active teammates
+       |
+  <span class="rd">Failure</span>           Spawn repair agents for failed specs
+  <span class="rd">Handling</span>          Escalate to user if repair fails (retry / skip / abort)
+       |
+  <span class="gn">Summary</span>           Write batch summary, aggregate learnings</div>
+
+    <div class="mt-md"></div>
+
+    <div class="grid-2">
+      <div class="callout">
+        <h4>Spec Splitter</h4>
+        <p>
+          <code class="inline">/spec-splitter</code> analyzes a large spec for complexity and, if warranted,
+          decomposes it into independent child specs with shared foundations. Dependencies are wired
+          via keyword embedding so <code class="inline">/pipeline-team</code>'s automatic detection works correctly.
+        </p>
+      </div>
+      <div class="callout">
+        <h4>Dependency Detection</h4>
+        <p>
+          Keywords are extracted from spec titles (words &gt; 4 chars, minus stopwords).
+          Two or more matching keywords between specs creates a dependency edge. Cycles are
+          detected and reported before execution begins.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-lg"></div>
+    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:16px;">Single vs. Batch Comparison</h3>
+    <div style="overflow-x:auto;">
+      <table class="cmd-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>/pipeline</th>
+            <th>/pipeline-team</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text);font-family:inherit;">Input</td>
+            <td>One spec (interactive or pre-written)</td>
+            <td>Multiple pre-written specs</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-family:inherit;">Parallelism</td>
+            <td>Sequential phases</td>
+            <td>Up to 5 concurrent pipelines</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-family:inherit;">Dependencies</td>
+            <td>N/A</td>
+            <td>Automatic keyword-based graph</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-family:inherit;">Merge</td>
+            <td>Immediate rebase + ff-only</td>
+            <td>Sequential merge queue</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text);font-family:inherit;">Error handling</td>
+            <td>Fix loop (2 cycles)</td>
+            <td>Fix loop + repair agent + user escalation</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== ARCHITECTURE ======================== -->
+<section id="architecture">
+  <div class="container">
+    <div class="section-label">Architecture</div>
+    <div class="section-title">Design Principles</div>
+    <p class="section-desc">
+      Key architectural decisions and the reasoning behind them.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>Independent Auditor</h4>
+        <p>The audit agent has never seen the plan or working log. It reads only the original spec and the current code.
+           This prevents confirmation bias &mdash; it cannot be influenced by what the implementer intended.</p>
+      </div>
+      <div class="card">
+        <h4>Git Worktree Isolation</h4>
+        <p>Every implementation runs in a git worktree (a separate working directory on its own branch).
+           The main branch is never modified until the explicit merge phase. Batch runs can have 5 worktrees active simultaneously.</p>
+      </div>
+      <div class="card">
+        <h4>Fast-Forward Only Merges</h4>
+        <p>Worktrees are rebased before merging with <code>--ff-only</code>.
+           This guarantees perfectly linear git history, making bisection and rollback straightforward.</p>
+      </div>
+      <div class="card">
+        <h4>Append-Only Learnings</h4>
+        <p>Every pipeline run appends process observations to <code>learnings.md</code>, building a knowledge base
+           of recurring friction. Each entry includes the affected phase, occurrence count, and a concrete suggested fix with a diff.</p>
+      </div>
+      <div class="card">
+        <h4>Reference Files as Templates</h4>
+        <p>Each pipeline phase has a reference file (<code>commands/references/pipeline/phase*.md</code>)
+           that serves as a prompt template with <code>[VARIABLE]</code> placeholders.
+           The orchestrator substitutes values before passing to subagents. These are not documentation.</p>
+      </div>
+      <div class="card">
+        <h4>Artifact Isolation</h4>
+        <p>All artifact directories exist only in the main repo root, never in worktrees.
+           Subagents use absolute <code>[MASTER_REPO_PATH]</code> paths.
+           This ensures every phase can find prior artifacts regardless of which worktree it runs in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== TRACEABILITY ======================== -->
+<section id="traceability">
+  <div class="container">
+    <div class="section-label">Traceability</div>
+    <div class="section-title">Artifact Chain</div>
+    <p class="section-desc">
+      Every artifact references its predecessors. Any piece of code on main can be traced back
+      to the spec decision that motivated it.
+    </p>
+
+    <div class="diagram-box">  <span class="gn">spec--*.md</span>                          Structured requirements document
+       |                                     Goals, decisions, technical design
+       v
+  <span class="hl">impl--*.md</span>                          Step-by-step build plan
+       |                                     Files, code, verification checklist
+       v
+  <span class="am">wlog--*.md</span>                          Execution record
+       |                                     Changes, errors, retries, deviations
+       v
+  <span class="rd">audit-impl--*.md</span>                    Independent verification
+       |                                     Goal 1: MET  |  Goal 2: UNMET
+       |                                     Actionable Error #1: ...
+       v
+  <span class="am">fixer-log--*.md</span>                     Error resolution record
+       |                                     Error #1: FIXED  |  Error #2: SKIPPED
+       v
+  <span class="gn">main branch</span>                         Clean fast-forward merge, linear history</div>
+  </div>
+</section>
+
+<!-- ======================== FOOTER ======================== -->
+<footer>
+  <div class="container">
+    <p>PipelineIQ &mdash; Built with <a href="https://claude.ai/claude-code" target="_blank">Claude Code</a></p>
+    <p style="margin-top:6px;">No runtime, no build step, no dependencies. Markdown prompt files that orchestrate AI agents.</p>
+  </div>
+</footer>
+
+</body>
+</html>
