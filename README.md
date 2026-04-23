@@ -4,6 +4,14 @@
 
 Claude Code slash commands for a closed-loop **spec → plan → implement → audit → fix → merge** pipeline, plus a multi-spec parallel runner built on agent teams.
 
+## Design Philosophy
+
+PipelineIQ was built around one constraint: **keep batch execution affordable.**
+When `/pipeline-team` runs 5 specs in parallel, every extra subagent call
+multiplies across the batch. So the full lifecycle runs in 4–8 subagent calls
+per spec — consolidating review into a single independent audit rather than
+per-task review loops. Different trade-offs for different workflows.
+
 ## How It Works
 
 ### `/pipeline` — Single-Spec Pipeline
