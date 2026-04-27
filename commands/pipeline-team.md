@@ -15,16 +15,19 @@ The argument (if any) is: $ARGUMENTS
 
 ## Resolve COMMANDS_PATH
 
-Determine the absolute path to this plugin's `commands/` directory. This is used to locate sibling command files and reference templates.
+Determine the absolute path to this plugin's `commands/` directory.
 
 Discovery order:
-1. Search the plugin cache: glob for `~/.claude/plugins/cache/**/pipelineiq/.claude-plugin/plugin.json`.
-   If found: COMMANDS_PATH = <parent of .claude-plugin>/commands
-2. If not found: walk up from CWD looking for `.claude-plugin/plugin.json` where the
-   adjacent `commands/` directory contains `pipeline.md`.
+1. Read `~/.claude/plugins/installed_plugins.json`. Parse as JSON.
+   Find any key matching `pipelineiq@*` (match plugin name prefix, ignore marketplace suffix).
+   If multiple matches: collect all entries across all matching keys, sort by `lastUpdated`
+   descending, take the first. Set COMMANDS_PATH = <installPath>/commands.
+2. If the registry file does not exist, is unreadable, or contains no `pipelineiq@*` key:
+   walk up from CWD looking for `.claude-plugin/plugin.json` where the adjacent `commands/`
+   directory contains `pipeline.md`.
    If found: COMMANDS_PATH = <that commands/ directory>
-3. If neither found: STOP with "Cannot locate PipelineIQ plugin root. Ensure the plugin
-   is installed via '/plugin install pipelineiq' or you are in the PipelineIQ repo."
+3. If neither found: STOP with "Cannot locate PipelineIQ plugin. Ensure the plugin
+   is installed via the plugin marketplace, or you are in the PipelineIQ repo."
 
 Verify: check that COMMANDS_PATH/references/pipeline-team/ exists.
 Store COMMANDS_PATH as an absolute path for use in all subsequent phases.

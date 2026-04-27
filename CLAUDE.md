@@ -27,7 +27,7 @@ Claude Code slash commands that form a closed-loop **spec → plan → implement
 ## Gotchas
 
 1. **SKIP_MERGE must be a whitespace-delimited token.** `pipeline.md` splits arguments on whitespace and checks for an exact match. Embedding it inside a filename (e.g., `my-spec-SKIP_MERGE=true.md`) won't trigger the flag — the pipeline will try to find a spec file with that name and fail.
-2. **COMMANDS_PATH discovery has a two-step fallback.** Plugin cache (glob for `~/.claude/plugins/cache/**/pipelineiq/`) is tried first, then CWD ancestry walk. If neither finds `.claude-plugin/plugin.json`, the pipeline stops with a clear error message. No manual path configuration is needed.
+2. **COMMANDS_PATH discovery has a two-step fallback.** The plugin registry (`~/.claude/plugins/installed_plugins.json`) is checked first for any `pipelineiq@*` entry -- the `installPath` field gives the exact location. If the registry is missing or has no entry, a CWD ancestry walk is tried (for local PipelineIQ development). If neither succeeds, the pipeline stops with a clear error message. No manual path configuration is needed.
 3. **Stale worktree state blocks `pipeline-team` startup.** Pre-flight Check 4 refuses to run if any non-main worktree exists. A forgotten worktree from a previous session (including crashed ones) will block all batch runs until cleaned up with `git worktree remove` + `git worktree prune`.
 4. **Re-audit after fix is conditional.** If the fixer logs "0 errors fixed" or applies no file changes, pipeline Phase 5 skips the re-audit subagent entirely. A fixer that silently fails without logging will cause the pipeline to skip re-audit and proceed with the original error count.
 
