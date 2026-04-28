@@ -124,20 +124,24 @@ If the spec should be split, group the content into child specs:
 3. **Assign edge cases** -- each edge case goes to the child spec whose Technical Design subsection it references. Cross-cutting edge cases go to every child they touch (duplicated, with a note: "Also applies to: [sibling spec name]").
 4. **Assign constraints** -- project-wide constraints go into every child. Constraints specific to one area go only to that child.
 5. **Duplicate shared decisions** -- decisions that apply to multiple children are copied in full (including rationale) into every relevant child. No cross-references to parent or siblings.
-6. **Wire dependencies** -- determine which child specs depend on which others. For each dependency edge, intentionally embed 2+ title keywords (> 4 chars) from the dependency's title into the dependent's Goal or Current State text. This ensures pipeline-team's keyword-matching algorithm detects the edge. **[CONTRACT: keyword-stopwords]** Stopword list and threshold must match pipeline-team.md Phase 1 exactly.
+6. **Wire dependencies** -- determine which child specs depend on which others. For each dependency edge, intentionally embed 2+ title keywords (> 4 chars) from the dependency's title into the dependent's Goal or Current State text as whole words (not inside compound identifiers). Keywords must survive word-boundary matching: they should appear as standalone words or hyphen-separated segments, not embedded in underscored compounds or longer tokens. **[CONTRACT: keyword-stopwords]** Stopword list (15 words) and threshold (2+) are documented in the "Verify keyword wiring" section below. Note: this list intentionally diverges from pipeline-team.md's 7-word list pending a separate sync effort.
 7. **Maximize parallelism** -- if two possible groupings produce similar child sizes but different wave structures, prefer the one with more specs in Wave 1 (no dependencies).
 8. **Handle shared files** -- if two Technical Design subsections both modify the same file, that file is a coupling point. Assign it to the child that modifies it most heavily. Other children list it as a read-only dependency in their Current State (which triggers a dependency edge via keyword wiring). If the file is modified equally by multiple subsections, it becomes part of the foundation spec.
 
 ### Verify keyword wiring
 
-Before presenting, run pipeline-team's dependency detection algorithm against the proposed child titles and Goal/Current State text:
+Before presenting, run dependency detection against the proposed child titles and Goal/Current State text using word-boundary matching:
 
-For each pair of children (A, B):
-1. Extract B's title keywords (words > 4 chars, lowercase, excluding stopwords: "with", "that", "this", "from", "into", "using", "their"). **[CONTRACT: keyword-stopwords]**
-2. Check if 2+ of B's keywords appear in A's Goal or Current State text.
-3. If yes -> A depends on B.
+**Keyword extraction:** For each child's title, extract keywords: words > 4 chars, lowercased, excluding stopwords: "with", "that", "this", "from", "into", "using", "their", "should", "every", "about", "which", "where", "being", "other", "these". **[CONTRACT: keyword-stopwords]** (Note: this expanded list intentionally diverges from pipeline-team.md's 7-word list. A separate effort will sync pipeline-team.md.)
 
-Verify the detected graph matches the intended dependency graph. If not, adjust the keyword wiring in the Goal/Current State text.
+**Word-boundary matching:** For each pair (A, B), check if 2+ of B's title keywords appear as whole words in A's Goal or Current State text. To build the word set from A's text:
+1. Lowercase the full text.
+2. Split on whitespace (spaces, tabs, newlines).
+3. Further split each token on hyphens (e.g., `provider-infrastructure` -> `provider`, `infrastructure`).
+4. Strip leading/trailing punctuation from each word (e.g., `"gmail,"` -> `gmail`, `(provider)` -> `provider`).
+5. A keyword matches only if it equals a word in this set exactly. Substring matches do not count (e.g., `gmail` does NOT match `gmail_account`).
+
+If 2+ keywords match -> A depends on B. Verify the detected graph matches the intended dependency graph. If not, adjust wiring.
 
 Also check for cycles. If a cycle is detected: "Circular dependency: A -> B -> A. Adjusting grouping to remove cycle." Re-group and re-check.
 
@@ -288,6 +292,18 @@ Child-specific constraints only in the relevant child.]
 
 [Relevant open questions, or "None".]
 ```
+
+### Scrub accidental keyword overlaps
+
+After generating each child spec's content (but before writing to disk), scan for accidental keyword matches against non-dependency siblings. Run this even when all children are independent -- accidental overlaps could still create phantom edges.
+
+For each child spec C:
+1. Identify all sibling specs that C does NOT depend on (non-dependencies).
+2. For each non-dependency N: extract N's title keywords (same rules as "Verify keyword wiring": > 4 chars, lowercase, expanded stopword list excluded).
+3. Build a word set from C's Goal + Current State (same word-boundary rules: lowercase, split whitespace, split hyphens, strip punctuation).
+4. Count how many of N's keywords appear in C's word set.
+5. If 2+ match: rephrase C's text using synonyms (e.g., "gmail_account" -> "email account field", "configure" -> "set up"). Re-verify after each rephrase. If synonyms cannot reduce overlaps below the 2-keyword threshold, leave as-is -- word-boundary matching and cycle detection remain as safety nets.
+6. After all scrubbing, re-verify that intentionally wired dependency keywords are still present. If scrubbing removed a dependency keyword, restore it.
 
 ### Union coverage check
 
