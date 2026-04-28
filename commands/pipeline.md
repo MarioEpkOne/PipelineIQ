@@ -279,26 +279,27 @@ When uncertain whether two observations are the same problem, err on the side of
 
 For the matched entry:
 1. Increment the occurrence count
-2. Add the current date and spec/batch identifier to the **Seen in** list
+2. Add the spec/batch identifier to the **Seen in** list
 3. Update **What happened** to incorporate the new observation if it adds useful detail (do not just repeat -- enrich)
 4. Recalculate severity: 1 = LOW, 2-3 = MEDIUM, 4+ = HIGH
 5. If severity changed: move the entry to the correct tier section
-6. Re-read the target command file (the one in **Suggested diff**) and regenerate the diff against its current state. Update **Last verified** to today's date.
+6. Re-read the target command file (the one in **Suggested diff**) and regenerate the diff against its current state.
 
 **One pipeline run = one occurrence per learning.** Even if the same problem manifested multiple times within this single run, count it as one occurrence.
 
 **Step 5 -- Create new entry**
 
 1. Read the target command file to draft an exact diff
-2. Create a new entry under the **LOW** section with:
+2. Run `date '+%Y-%m-%d %H:%M'` to get the current date-and-time.
+3. Create a new entry under the **LOW** section with:
    - Title (short, descriptive)
+   - Date: the date-and-time from the command above
    - Phase affected
    - Occurrences: 1
-   - Seen in: today's date and spec/batch identifier
+   - Seen in: spec/batch identifier (no date — the Date field covers that)
    - What happened (one sentence)
    - Suggestion (concrete change)
    - Suggested diff (file path in `commands/` + diff block). If the target file cannot be read (missing, wrong path), set Suggested diff to "Unable to generate -- target file not found: [path]". Still track the observation.
-   - Last verified: today's date
 
 **Step 6 -- Write learnings.md**
 
@@ -311,9 +312,10 @@ Each entry must follow this exact format:
 
 ```
 ### [Title]
+**Date**: [YYYY-MM-DD HH:MM]
 **Phase affected**: [phase]
 **Occurrences**: [N]
-**Seen in**: [date (spec-name), date (spec-name), ...]
+**Seen in**: [spec-name, spec-name, ...]
 **What happened**: [description]
 **Suggestion**: [concrete change]
 **Suggested diff**:
@@ -322,7 +324,6 @@ File: `commands/[filename]`
 - old line
 + new line
 ```
-**Last verified**: [date]
 ```
 
 **Important constraints:**
@@ -331,7 +332,7 @@ File: `commands/[filename]`
 - Do NOT create entries about code quality, project architecture, or implementation patterns -- only pipeline process friction
 - If an observation matches an entry already in `promotion-log.md` (a previously applied fix), this is a regression: create a new entry at LOW with a note: "Previously applied on [date] -- see promotion-log.md. Recurrence suggests the fix was insufficient."
 - If the target file has changed so much a diff concept no longer applies, regenerate from scratch. If the problem appears fixed, note: "May be resolved -- verify before applying" but do NOT remove the entry.
-- If the pipeline ran inside a project other than PipelineIQ, include the project name or path in each **Seen in** entry (e.g., "2026-04-22 (spec--widgets, project: /path/to/other)") to distinguish cross-project observations.
+- If the pipeline ran inside a project other than PipelineIQ, include the project name or path in each **Seen in** entry (e.g., "spec--widgets, project: /path/to/other") to distinguish cross-project observations.
 
 ### SKIP_MERGE branch:
 
