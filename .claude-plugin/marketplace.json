@@ -11,8 +11,7 @@
       "category": "development",
       "source": {
         "source": "url",
-        "url": "https://github.com/MarioEpkOne/PipelineIQ.git",
-        "sha": "d1f5ed9b77af09fed569f208eec0f90fb07975d4"
+        "url": "https://github.com/MarioEpkOne/PipelineIQ.git"
       }
     }
   ]
