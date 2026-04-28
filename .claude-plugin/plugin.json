@@ -1,6 +1,6 @@
 {
   "name": "pipelineiq",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Closed-loop spec -> plan -> implement -> audit -> fix -> merge pipeline for Claude Code",
   "author": {
     "name": "Epkone",
