@@ -33,11 +33,20 @@ Set `MERGE_HAPPENED = false`.
      ```
      If the rebase has conflicts: describe every conflicting file to the user and stop. Tell them to resolve the conflicts inside the worktree and then run the following manually when ready:
      ```
+     ExitWorktree action="keep"   (if the pipeline session called EnterWorktree)
      git -C "MASTER_REPO_PATH" merge --ff-only WORKTREE_BRANCH
      git worktree remove "WORKTREE_PATH"
      git -C "MASTER_REPO_PATH" branch -d WORKTREE_BRANCH
      git -C "MASTER_REPO_PATH" worktree prune
      ```
+
+  2a. Clear the worktree session state so the harness no longer tracks this worktree:
+      Call `ExitWorktree action="keep"`.
+      This returns the session CWD to the main repo. The worktree directory
+      still exists on disk (cleaned up in step 4), but the harness no longer
+      considers itself "inside" it. Without this step, the harness session
+      state becomes stale after step 4 deletes the directory, causing
+      "path does not exist" errors in the next conversation.
 
   3. Merge into master (fast-forward only -- guarantees linear history):
      ```bash
@@ -59,6 +68,7 @@ Set `MERGE_HAPPENED = false`.
   Report the manual steps so the user can do it later:
   ```
   git -C "WORKTREE_PATH" rebase master
+  ExitWorktree action="keep"   (if the pipeline session called EnterWorktree)
   git -C "MASTER_REPO_PATH" merge --ff-only WORKTREE_BRANCH
   git worktree remove "WORKTREE_PATH"
   git -C "MASTER_REPO_PATH" branch -d WORKTREE_BRANCH
