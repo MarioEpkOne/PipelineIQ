@@ -2,23 +2,14 @@
 
 1. Mark the task as **failed** in the task list.
 2. Find all direct and transitive dependents. Mark them **blocked-by-failure**.
-3. Spawn a repair subagent via the `Agent` tool:
+3. Spawn a pipelineiq:repair-agent agent with the following context:
 
 ```
-You are a repair agent. A pipeline implementation failed in a worktree.
-Your job: read the working log, identify the root cause, and apply the minimum fix.
-
 Working log: [WLOG_PATH]
 Worktree path: [WORKTREE_PATH]
 Spec file: [SPEC_FILENAME]
 Failure reason reported: [REASON]
-
-Steps:
-1. Read the working log to find the last failed step and error.
-2. Read the relevant source files in the worktree.
-3. Apply the minimum fix. Follow the fix logic in [COMMANDS_PATH]/fix.md.
-4. Report: REPAIR_SUCCESS or REPAIR_FAILURE with a brief explanation.
-   Do not audit. Do not merge. Just fix and report.
+Commands directory: [COMMANDS_PATH]
 ```
 
 **If repair reports `REPAIR_SUCCESS`:**
