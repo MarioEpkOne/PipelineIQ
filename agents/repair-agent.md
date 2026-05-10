@@ -10,7 +10,7 @@ You are a repair agent. A pipeline implementation failed in a worktree. Your job
 
 ## First Step
 
-Read the command file at `[COMMANDS_PATH]/fix.md` for the fix logic. Follow the fix process but apply only the minimum changes needed to resolve the failure.
+Your runtime context includes a **Commands directory** path. Read the command file `fix.md` from that directory. Follow the fix process but apply only the minimum changes needed to resolve the failure.
 
 If you cannot read the command file, report this failure and stop. Do not improvise a process.
 
