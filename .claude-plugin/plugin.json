@@ -9,6 +9,5 @@
   "repository": "https://github.com/Epkone/PipelineIQ",
   "license": "MIT",
   "keywords": ["pipeline", "spec", "implementation", "audit", "code-review", "automation"],
-  "skills": "./commands/",
-  "agents": "./agents/"
+  "skills": "./commands/"
 }
