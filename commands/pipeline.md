@@ -121,7 +121,7 @@ Store the worktree path as `WORKTREE_PATH` and branch as `WORKTREE_BRANCH`.
 
 Read `[COMMANDS_PATH]/references/pipeline/phase2-impl-plan.md`.
 Fill in variables: [SPEC_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Spawn a pipelineiq:planner agent with the filled prompt.
+Spawn an Agent with subagent_type="pipelineiq:planner" and the filled prompt as its prompt.
 
 Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Implementation Plans/` for the most recently modified file if not reported).
 
@@ -137,7 +137,7 @@ Wait for completion. Note the impl plan filename (check `[MASTER_REPO_PATH]/Impl
 
 Read `[COMMANDS_PATH]/references/pipeline/phase3-impl.md`.
 Fill in variables: [IMPL_PLAN_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Spawn a pipelineiq:implementer agent with the filled prompt.
+Spawn an Agent with subagent_type="pipelineiq:implementer" and the filled prompt as its prompt.
 
 Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Working Logs/` for the most recently modified file).
 
@@ -155,7 +155,7 @@ Wait for completion. Note the working log filename (check `[MASTER_REPO_PATH]/Wo
 
 Read `[COMMANDS_PATH]/references/pipeline/phase4-audit.md`.
 Fill in variables: [WORKING_LOG_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Spawn a pipelineiq:auditor agent with the filled prompt.
+Spawn an Agent with subagent_type="pipelineiq:auditor" and the filled prompt as its prompt.
 
 Wait for completion. Parse the audit subagent's output for the saved audit path (the subagent outputs "Audit saved to `Working Logs/audit-impl--...md`"). Construct the full path as `[MASTER_REPO_PATH]/Working Logs/<parsed-filename>`. Store as `AUDIT_FILENAME`. If the subagent's output does not contain a parseable audit path, fall back to the most recently modified `audit-impl--*.md` file in `[MASTER_REPO_PATH]/Working Logs/`. Log warning: "Could not parse audit path from subagent output -- using fallback."
 
@@ -179,7 +179,7 @@ Set `MAX_LOOPS = 2`. Initialize `loop_count = 0`.
 
 Read `[COMMANDS_PATH]/references/pipeline/phase5-fix.md`.
 Fill in variables: [AUDIT_FILENAME], [WORKTREE_PATH], [MASTER_REPO_PATH], [COMMANDS_PATH].
-Spawn a pipelineiq:fixer agent with the filled prompt.
+Spawn an Agent with subagent_type="pipelineiq:fixer" and the filled prompt as its prompt.
 
 Wait for the fixer to complete.
 
@@ -191,7 +191,7 @@ Wait for the fixer to complete.
 
 Read `[COMMANDS_PATH]/references/pipeline/phase5-reaudit.md`.
 Fill in variables: [AUDIT_FILENAME], [MASTER_REPO_PATH], [COMMANDS_PATH], {loop_count}.
-Spawn a pipelineiq:re-auditor agent with the filled prompt.
+Spawn an Agent with subagent_type="pipelineiq:re-auditor" and the filled prompt as its prompt.
 
 Parse the "Remaining Actionable Errors" section from the appended content in `[AUDIT_FILENAME]`.
 

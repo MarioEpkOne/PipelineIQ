@@ -302,8 +302,17 @@ For each child spec C:
 2. For each non-dependency N: extract N's title keywords (same rules as "Verify keyword wiring": > 4 chars, lowercase, expanded stopword list excluded).
 3. Build a word set from C's Goal + Current State (same word-boundary rules: lowercase, split whitespace, split hyphens, strip punctuation).
 4. Count how many of N's keywords appear in C's word set.
-5. If 2+ match: rephrase C's text using synonyms (e.g., "gmail_account" -> "email account field", "configure" -> "set up"). Re-verify after each rephrase. If synonyms cannot reduce overlaps below the 2-keyword threshold, leave as-is -- word-boundary matching and cycle detection remain as safety nets.
+5. If 2+ match: rephrase C's text using synonyms. Re-verify after each rephrase. If synonyms cannot reduce overlaps below the 2-keyword threshold, leave as-is -- word-boundary matching and cycle detection remain as safety nets. Common false-positive patterns to watch for:
+   - Underscore/hyphenated identifiers: `gmail_account` -> `email account field`. `developing-with-streamlit` splits to `developing`, `with`, `streamlit` -- if a sibling title contains `streamlit`, rephrase to "the Streamlit skill".
+   - Natural-language phrases: `No application code` contains `application` -- if a sibling title contains `application`, rephrase to "No source code" or "No implementation yet".
+   - Boilerplate lines copied from the parent spec (skill names, "No X code" phrases) are the most common source of accidental overlaps.
 6. After all scrubbing, re-verify that intentionally wired dependency keywords are still present. If scrubbing removed a dependency keyword, restore it.
+7. **Mandatory: output a scrubbing verification table** before writing any spec files to disk. One row per child × non-dependency sibling pair:
+
+| Child | Non-dep sibling | Sibling keywords | Matches in Goal+Current State | Action |
+|-------|----------------|-----------------|------------------------------|--------|
+
+The "Action" column must say "CLEAN" if < 2 matches, or describe the rephrase applied. Do not skip rows — every pair must be enumerated explicitly.
 
 ### Union coverage check
 
