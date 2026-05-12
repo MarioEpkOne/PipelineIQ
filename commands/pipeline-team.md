@@ -157,7 +157,7 @@ Initialize the **merge queue**: write `~/.claude/teams/<team-name>/merge-queue.j
 
 --- /pipeline-team: SPAWNING WAVE N (specs: [list]) ---
 
-For each spec in the current unblocked wave (max 5 active teammates at any time), spawn a **fresh teammate** with model=sonnet using the template below.
+For each spec in the current unblocked wave (max 5 active teammates at any time), spawn a **fresh teammate** with model=opus using the template below.
 
 When a teammate slot opens (a teammate sends `PIPELINE_COMPLETE` or `PIPELINE_FAILURE`), spawn the next unblocked spec immediately.
 
@@ -170,6 +170,9 @@ You are a pipeline worker. Your job is to run the full implementation
 pipeline for exactly ONE spec file, then report back to the lead.
 
 Read `[COMMANDS_PATH]/pipeline.md` in full and follow every phase in it.
+Spawn all subagents using the named agent types specified in pipeline.md
+(pipelineiq:planner, pipelineiq:implementer, etc.). Never inline phase
+work -- always delegate to the designated subagent_type for each phase.
 
 Your arguments are: [SPEC_FILENAME] SKIP_MERGE=true
 
@@ -223,7 +226,13 @@ The lead processes merge requests sequentially, one at a time.
 
 1. **Rebase**: `git -C "<worktree_path>" rebase master`. On success -> continue. Non-critical file conflicts (docs, changelogs, learnings.md, PATCHNOTES.md): auto-resolve with `--ours`, then `git rebase --continue`. Source code conflicts: PAUSE and ask user to resolve or skip.
 2. **Merge**: `git merge --ff-only <branch>`. If ff-only fails: report to user, do not force.
-3. **Cleanup**: `git worktree remove "<worktree_path>" && git branch -d <branch> && git worktree prune`.
+3. **Cleanup**: First purge untracked files and discard uncommitted modifications (safe because merge already captured all committed state):
+   ```
+   git -C "<worktree_path>" clean -fd
+   git -C "<worktree_path>" checkout .
+   ```
+   Then remove the worktree: `git worktree remove "<worktree_path>"`. If this fails (exit 128: modified/untracked files despite the clean step), retry with `git worktree remove --force "<worktree_path>"` and log "Worktree required force-remove after clean -- investigate why artifacts survived git clean."
+   Then: `git branch -d <branch> && git worktree prune`.
 4. **Broadcast** `MASTER_ADVANCED` to all active teammates.
 5. **Mark task complete** immediately after merge. Never wait for the teammate.
 6. **Task-lag fallback**: if dependents are not unblocked after 3 min, nudge the idle teammate. After 3 more min, mark complete manually and log "task lag detected."
@@ -346,4 +355,5 @@ If any spec has remaining errors: preserve ALL artifacts (not just the failed sp
 | Repair fails + user replies 'abort' | Shut down active teammates (5-min wait each), write partial summary, exit |
 | Lead session crashes mid-batch | Run resume protocol on next invocation |
 | Permission prompts mid-run | Expected if not in auto-approve mode (warned in Phase 0); user approves each |
+| `git worktree remove` fails after merge | Run `git clean -fd` + `git checkout .` in worktree, retry remove. If still fails, use `--force`. If force also fails: STOP, report to user with worktree path |
 | Reference file not found | STOP with clear error message naming the missing file |
