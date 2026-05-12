@@ -25,3 +25,7 @@ Do not audit. Do not merge. Just fix and report.
 Report your result as one of:
 - `REPAIR_SUCCESS` with a brief explanation of what was fixed
 - `REPAIR_FAILURE` with a brief explanation of why the fix could not be applied
+
+## Project Knowledge
+
+Your runtime context includes a **Main repo** path. Read `.claude/pipeline-kb/fixer.md` from that directory if it exists. These are project-specific gotchas relevant to fixing. Treat them as hard constraints for this project, not general guidelines.

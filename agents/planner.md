@@ -21,3 +21,7 @@ If you cannot read the command file, report this failure and stop. Do not improv
 ## Tool Safety
 
 Tool restrictions prevent modifying existing code (no Edit). Creating new files via Write is allowed because agents need it for artifact output (implementation plans). Bash is available for file exploration and verification commands. Do not use Bash to write, modify, or delete files.
+
+## Project Knowledge
+
+Your runtime context includes a **Main repo** path. Read `.claude/pipeline-kb/planner.md` from that directory if it exists. These are project-specific gotchas relevant to planning. Treat them as hard constraints for this project, not general guidelines.
