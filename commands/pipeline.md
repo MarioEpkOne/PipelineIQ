@@ -266,6 +266,8 @@ For each observation, determine:
 - Which command file in `commands/` would need to change to prevent this (diffs target `commands/` only -- no diffs for skills, CLAUDE.md, or files outside the pipeline command directory)
 - What the specific change would be
 
+**Routing caveat**: The diff target (`commands/*.md`) is always used for the "Suggested diff" field because that's the only valid diff destination format. However, if the observation is fundamentally about a specific project's characteristics (framework choices, language requirements, domain-specific patterns) rather than universal pipeline mechanics, it will be reclassified during `/learnings-review`. Record the observation regardless -- routing is determined at review time, not recording time.
+
 If this run was smooth with nothing notable: skip to the end (do not write empty entries).
 
 **Step 3 -- Deduplicate against existing entries**

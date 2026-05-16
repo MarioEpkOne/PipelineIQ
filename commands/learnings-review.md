@@ -43,11 +43,13 @@ For project-specific and hybrid entries, also determine:
 - **Project-wide vs. agent-specific**: all agents (-> `CLAUDE.md ## Pipeline Learnings`) or specific ones (-> KB files)?
 - **Reframed text**: for each target agent, write the bullet in language appropriate to that agent's role
 
-Classification guidance:
-- If "Suggested diff" targets `commands/*.md` and observation is about pipeline process -> universal
-- If observation references project-specific entities (API endpoints, language requirements, framework choices, dependency names, domain terms) -> project-specific
-- If observation is a general principle but evidence is project-specific -> hybrid
-- When uncertain, default to universal
+Classification guidance (evaluated in priority order -- first match wins):
+1. If observation references project-specific entities (API endpoints, language requirements, framework choices, dependency names, domain terms) -> **project-specific** (regardless of diff target)
+2. If observation is a general principle but evidence is project-specific -> **hybrid** (split into universal diff AND project-specific KB entry)
+3. If "Suggested diff" targets `commands/*.md` AND observation is purely about pipeline mechanics with no project-specific entities -> **universal**
+4. When uncertain, default to **project-specific** (lower blast radius; can be promoted to universal in a future review cycle)
+
+Note: The "Suggested diff" target in learnings.md is Phase 6's routing suggestion, not an authoritative classification. Phase 6 always targets `commands/*.md` because that's the only valid diff destination. Content-based signals override this heuristic.
 
 ## Step 3 -- Present analysis
 
