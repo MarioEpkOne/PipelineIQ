@@ -6,7 +6,7 @@ The user's request is: $ARGUMENTS
 
 This skill is a process autopsy, not a QA check. The goal is to understand *why* failures happened so the skills and rules can be improved for future implementations. Run this after every /impl. For auditing whether an implementation *plan* conforms to the impl-plan skill spec, use `/audit-plan` instead.
 
-**Re-audit mode (after /fix):** If this audit is being run after a `/fix` session, limit scope to: (1) verify each change the fixer stated it made in its working log, and (2) confirm no regressions were introduced. A full independent evaluation and complete failure taxonomy are not needed — skip Phase 2 and condense Phase 3 to only the fixer's stated changes. Note "Re-audit — scoped to fixer's stated changes" at the top of the audit document.
+**Re-audit mode (after /fix):** If this audit is being run after a `/fix` session, limit scope to: (1) verify each change the fixer stated it made in its working log, and (2) confirm no regressions were introduced. A full independent evaluation and complete failure taxonomy are not needed — skip Phase 2 (the blind pass) entirely and read all inputs normally, then condense Phase 3 to only the fixer's stated changes. Note "Re-audit — scoped to fixer's stated changes" at the top of the audit document.
 
 ---
 
@@ -17,38 +17,29 @@ This skill is a process autopsy, not a QA check. The goal is to understand *why*
 - If no argument: use the most recently modified `.md` file in `Working Logs/`.
 - If none found: tell the user and exit.
 
-Read the working log in full.
+Read **only the working log's header fields** (e.g. `**Impl plan:**`) — enough to follow the chain to the spec. Do **not** read the working log body ("Changes Made", "Deviations", "Errors", verification narrative) yet; that is deferred to Phase 3 so it cannot anchor your independent verdict.
+
+> **Re-audit exception**: In Re-audit mode (after `/fix`), there is no blind pass — read the working log in full now, normally.
 
 **Follow the chain:**
-- From the working log's `**Impl plan:**` header field: find and read the impl plan from `Implementation Plans/`.
-- From the impl plan's `**Spec:**` header field: find and read the spec from `specs/`.
+- From the working log's `**Impl plan:**` header field: find the impl plan in `Implementation Plans/` and read **only its `**Spec:**` header field** (not the full plan — the plan body is deferred to Phase 3 along with the working-log body).
+- From the impl plan's `**Spec:**` header field: find and read the **spec in full** from `specs/`.
 
-If a link is missing, continue without that document but flag the gap in the audit output. If the spec cannot be found, skip Phase 2 (independent evaluator requires the spec) and note "Independent evaluation skipped — spec not found."
-
----
-
-## Phase 2 — Independent Evaluator Sub-Agent
-
-Launch a sub-agent using the Agent tool. Pass it the following prompt, with the full spec content pasted in at the end:
+If a link is missing, continue without that document but flag the gap in the audit output. If the spec cannot be found, skip Phase 2 (the blind evaluation requires the spec) and note "Independent evaluation skipped — spec not found."
 
 ---
-*Sub-agent prompt (fill in [SPEC CONTENT] before launching):*
 
-```
-You are an independent evaluator. You have NOT seen the working log or implementation plan for this feature. Do not read files in Working Logs/ or Implementation Plans/.
+## Phase 2 — Independent Blind Evaluation (performed by you)
 
-Your inputs are:
-1. The spec document pasted below
-2. The current state of the codebase (you may read source files referenced in the spec's Technical Design section)
+> **Re-audit exception**: In Re-audit mode (after `/fix`), skip this entire phase — there is no blind pass. Proceed to Phase 3.
 
-Your task:
-For each goal and expected behavior stated in the spec's Goal and Edge Cases sections, inspect the current codebase state (read source files, run tests, check the build) to decide whether the behavior is in place.
+You are the independent evaluator. Subagents cannot spawn subagents, so do **not** attempt to launch a helper with the Agent tool — perform this evaluation yourself, now, having read **only the spec** (and NOT the working log body or the impl plan body). Treat this as a pre-registered, committed verdict: once written it stands, and Phase 3 may annotate it but must not revise it.
+
+Using only (1) the spec and (2) the live codebase — read the source files named in the spec's Technical Design section, run the tests/build where applicable — decide for each goal and each edge case whether the behavior is in place. Do not read any files in `Working Logs/` or `Implementation Plans/` beyond the header fields already read in Phase 1.
 
 CRITICAL RULE: Distinguish static evidence (value written in the source) from runtime evidence (value observed when the code runs). For properties computed only at runtime (layout, async state, rendered output), static inspection is NOT valid verification — say so explicitly and mark as "requires runtime verification".
 
-For each file mentioned in the spec's Technical Design section that you need to inspect: you may read it. Do not read any other files.
-
-Output exactly this structure:
+**Commit the verdict now.** Write the "Independent Evaluator Verdict", "Goals — Static Verification", and "Properties Not Verifiable Without Runtime Observation" sections to the audit document **before** reading the working log body or the impl plan body. Produce them in the structure used in Phase 5:
 
 ## Goals — Static Verification
 For each goal from the spec:
@@ -61,23 +52,15 @@ List any runtime-computed properties you inspected where only static/saved value
 ## Contradictions Found
 Any cases where the current code state directly contradicts what the spec expected.
 
----
-[SPEC CONTENT]
-```
-
----
-
-Wait for the sub-agent to complete. Store its verdict for use in Phase 3.
-
-If the sub-agent fails or times out: retry once after 3 seconds. If it fails again, note "Independent evaluation unavailable" in the audit and continue without it.
-
-If the sub-agent's output references specific error messages or file contents that only appear in the working log (suggesting it read the log despite instructions): note "Evaluator isolation may be compromised — verdict may be anchored" and treat it with lower confidence.
+Once these sections are written to the audit document, the blind verdict is committed. You may annotate divergences in Phase 3 but must **not** revise this blind verdict.
 
 ---
 
 ## Phase 3 — Analyze Failures
 
-Cross-reference the sub-agent verdict, the working log, and the impl plan. For every problem or deviation found, assign one or more of these categories:
+**Now** read the working log in full and the impl plan in full. Cross-reference them against your already-committed blind verdict from Phase 2. Where the narrative diverges from your verdict, record the divergence — do **not** edit the committed verdict.
+
+Cross-reference your blind verdict, the working log, and the impl plan. For every problem or deviation found, assign one or more of these categories:
 
 | Code | Meaning |
 |---|---|
@@ -123,7 +106,7 @@ Use this structure:
 ---
 
 ## Independent Evaluator Verdict
-[Summary of sub-agent findings. If evaluation was skipped or isolation may be compromised, say so here.]
+[Your committed blind verdict from Phase 2 — written before you read the working log or impl plan body. If evaluation was skipped (Re-audit mode, or spec not found), say so here.]
 
 ## Goals — Static Verification
 | Goal | Status | Evidence |
@@ -131,7 +114,7 @@ Use this structure:
 | [goal] | APPEARS MET / APPEARS UNMET / CANNOT VERIFY STATICALLY | [value observed or "requires runtime verification"] |
 
 ## Properties Not Verifiable Without Runtime Observation
-[List from sub-agent]
+[List from your blind evaluation in Phase 2]
 
 ---
 

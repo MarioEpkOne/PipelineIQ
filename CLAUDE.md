@@ -44,7 +44,7 @@ Install via Claude Code plugin: `/plugin marketplace add Epkone/PipelineIQ` then
 
 ## Development
 
-After pushing changes, the plugin cache syncs automatically via hooks in `.claude/settings.json` (Claude-driven pushes) and `.git/hooks/pre-push` (manual pushes). To verify sync: compare `git log --oneline -1` here against `git -C ~/.claude/plugins/cache/pipelineiq-marketplace/pipelineiq/1.2.2 log --oneline -1`.
+After pushing changes, the plugin cache syncs automatically via hooks in `.claude/settings.json` (Claude-driven pushes) and `.git/hooks/pre-push` (manual pushes). To verify sync: compare `git log --oneline -1` here against `git -C ~/.claude/plugins/cache/pipelineiq-marketplace/pipelineiq/1.3.0 log --oneline -1`.
 
 ## Commands Architecture
 

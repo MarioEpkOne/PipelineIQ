@@ -31,6 +31,16 @@ For each entry, in order of severity (HIGH first):
 
 Don't form opinions from the suggestion text alone -- always verify against the actual source.
 
+**Verify the fix's premise against up-to-date documentation (capability check).** If -- and only if -- the suggested fix *asserts an external capability or behavior* (a tool exists / behaves a certain way, a subagent/hook/slash-command/frontmatter mechanic, or a specific library/framework/API behavior), verify that premise before forming a verdict:
+
+- **Pipeline / Claude Code capability** (subagents, tools, hooks, slash commands, agent frontmatter, harness mechanics): verify against current Anthropic documentation using WebSearch + WebFetch on `code.claude.com/docs`, `docs.claude.com`, and `docs.anthropic.com`. Capture the source URL. (Seed entry points to search, not hardcode: `code.claude.com/docs/en/sub-agents`, `code.claude.com/docs/en/agent-sdk/*`.)
+- **Project tech-stack behavior** (a library, framework, or API in the target project): verify with Context7 -- resolve the library id, then query its docs (tool names vary by connection, e.g. `resolve-library-id` then `get-library-docs`/`query-docs`; resolve them at runtime). Capture the source.
+- If current docs **contradict** the premise (the assumed capability/behavior does not exist or works differently): verdict = **Invalid -- contradicts current docs** (see Step 3). Never recommend it; cite the source URL; flag the entry for rewrite or removal.
+- If docs **confirm** it: proceed normally.
+- If the docs are **silent or ambiguous**: this is NOT a contradiction -- note "unverified -- docs silent" and treat the entry on its other merits (do not auto-Apply a capability-dependent fix; prefer Watch).
+- If the needed tool is **unavailable** (no web access, Context7 not connected): note "premise unverified -- verification tools unavailable" and do not auto-Apply a capability-dependent fix this cycle. Never hard-fail the whole review for this -- continue with the remaining entries.
+- If the fix asserts **no** external capability (pure pipeline-process advice, e.g. a planning-discipline checklist row): note "no external capability asserted" and skip this sub-step.
+
 ## Step 2.5 -- Classify each entry
 
 For each entry, determine routing classification:
@@ -70,6 +80,9 @@ Verdicts:
 - **Skip** -- LOW severity or insufficient evidence
 - **Route** -- project-specific, route to KB files and/or CLAUDE.md
 - **Split** -- hybrid, split into universal diff + project KB entry
+- **Invalid -- contradicts current docs** -- the suggested fix relies on a capability or behavior that current documentation contradicts (cite the source URL). Never recommend or apply; surface to the user so the learning can be rewritten or dropped. Distinct from "Stale" (the diff *text* drifted) -- here the *premise* is wrong.
+
+The Step 3 table's "Verdict" column may now show `Invalid`. The Step 4 consolidated question must list any Invalid entries as blocked, each with its cited source URL.
 
 If PROJECT_KB_AVAILABLE is false, entries that would be project-specific are shown with routing "Universal (project KB unavailable)".
 
